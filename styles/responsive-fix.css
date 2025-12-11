@@ -1,0 +1,137 @@
+/* ============================================
+   NUCLEAR OPTION - FORCE FULL WIDTH EVERYWHERE
+   ============================================ */
+
+/* Reset everything */
+*,
+*::before,
+*::after {
+    box-sizing: border-box !important;
+}
+
+/* Force full viewport width */
+html {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Target React root and all children */
+#root {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#root>div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+/* Main content area */
+main {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    flex: 1 !important;
+}
+
+main>div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+main>div>div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+/* Remove ALL max-width utility classes */
+[class*="max-w-"],
+.max-w-7xl,
+.max-w-6xl,
+.max-w-5xl,
+.max-w-4xl,
+.max-w-3xl,
+.max-w-2xl,
+.max-w-xl {
+    max-width: 100% !important;
+}
+
+/* Remove centering */
+.mx-auto {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Force full width on common containers */
+[class*="container"],
+[class*="space-y"],
+[class*="grid"] {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Ensure cards don't overflow */
+[class*="Card"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Grid items should not overflow */
+.grid>* {
+    min-width: 0 !important;
+}
+
+/* Prevent horizontal scroll */
+body,
+html {
+    overflow-x: hidden !important;
+}
+
+/* Desktop layout with sidebar */
+@media (min-width: 1024px) {
+
+    /* Sidebar fixed width */
+    aside {
+        flex-shrink: 0 !important;
+        width: 16rem !important;
+    }
+
+    /* Main takes remaining space */
+    main {
+        flex: 1 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Tablet - hide sidebar */
+@media (min-width: 768px) and (max-width: 1023px) {
+    aside {
+        position: fixed !important;
+        left: -100% !important;
+    }
+
+    main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+}
