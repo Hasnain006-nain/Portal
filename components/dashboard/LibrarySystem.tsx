@@ -319,7 +319,6 @@ export function LibrarySystem({ onTabChange }: LibrarySystemProps = {}) {
   };
 
   const overdueCount = borrowedBooks.filter((b: any) => new Date(b.dueDate) < new Date()).length;
-  const activeCount = borrowedBooks.length;
 
   if (loading) {
     return (

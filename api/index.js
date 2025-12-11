@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient } = require('mongodb');
+const mysql = require('mysql2/promise');
 
 const app = express();
 
@@ -8,31 +8,30 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection with caching for serverless
+// MySQL connection with caching for serverless
 let cachedDb = null;
-let cachedClient = null;
 
 async function connectDB() {
-    if (cachedDb && cachedClient) {
-        const isConnected = cachedClient.topology && cachedClient.topology.isConnected();
-        if (isConnected) {
+    if (cachedDb) {
+        try {
+            await cachedDb.ping();
             return cachedDb;
+        } catch (error) {
+            cachedDb = null;
         }
     }
 
-    const uri = process.env.MONGODB_URI;
-    const client = new MongoClient(uri, {
-        maxPoolSize: 10,
-        minPoolSize: 1,
+    const connection = await mysql.createConnection({
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'studentportal',
+        port: process.env.DB_PORT || 3306,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
 
-    await client.connect();
-    const db = client.db('studentportal');
-
-    cachedClient = client;
-    cachedDb = db;
-
-    return db;
+    cachedDb = connection;
+    return connection;
 }
 
 // Initialize routes
@@ -51,6 +50,8 @@ async function initializeRoutes() {
     const requestRoutes = require('../server/routes/requests')(db);
     const notificationRoutes = require('../server/routes/notifications')(db);
     const announcementRoutes = require('../server/routes/announcements')(db);
+    const appointmentRoutes = require('../server/routes/appointments')(db);
+    const serviceRoutes = require('../server/routes/services')(db);
 
     // API routes
     app.use('/api/auth', authRoutes);
@@ -64,6 +65,8 @@ async function initializeRoutes() {
     app.use('/api/requests', requestRoutes);
     app.use('/api/notifications', notificationRoutes);
     app.use('/api/announcements', announcementRoutes);
+    app.use('/api/appointments', appointmentRoutes);
+    app.use('/api/services', serviceRoutes);
 
     // Health check
     app.get('/api/health', (req, res) => {
@@ -73,12 +76,11 @@ async function initializeRoutes() {
     // Database test endpoint
     app.get('/api/test-db', async (req, res) => {
         try {
-            const collections = await db.listCollections().toArray();
-            const collectionNames = collections.map(c => c.name);
+            const [tables] = await db.query('SHOW TABLES');
             res.json({
                 status: 'ok',
-                database: db.databaseName,
-                collections: collectionNames
+                database: process.env.DB_NAME,
+                tables: tables.map(t => Object.values(t)[0])
             });
         } catch (error) {
             res.status(500).json({ error: error.message });

@@ -23,19 +23,12 @@ interface SettingsProps {
 
 export function Settings({ onUserUpdate }: SettingsProps = {}) {
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
-    const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
     const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
     const [newName, setNewName] = useState('');
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [profileForm, setProfileForm] = useState({
-        first_name: '',
-        last_name: '',
-        phone: '',
-        department: ''
-    });
 
     const [passwordForm, setPasswordForm] = useState({
         oldPassword: '',

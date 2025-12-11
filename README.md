@@ -115,18 +115,34 @@ npm run dev
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:5002`
 
-## 🚀 Deployment
+## 🚀 Quick Deployment
 
-### Vercel (Frontend)
-1. Push code to GitHub
-2. Import project in Vercel
-3. Set build command: `npm run build`
-4. Set output directory: `dist`
-5. Deploy!
+### Automated Deployment (Recommended)
+```bash
+# Windows
+deploy.bat
 
-### Backend Deployment
-- Deploy on Railway, Render, or Heroku
-- Update frontend API URL in environment variables
+# Linux/Mac
+chmod +x deploy.sh
+./deploy.sh
+```
+
+### Manual Deployment
+1. **Database Setup**: Create MySQL database (PlanetScale recommended)
+2. **Build**: `npm run build`
+3. **Deploy**: `vercel --prod`
+4. **Configure**: Set environment variables in Vercel dashboard
+
+### Environment Variables (Required)
+```env
+DB_HOST=your-database-host
+DB_USER=your-database-username
+DB_PASSWORD=your-database-password
+DB_NAME=studentportal
+JWT_SECRET=your-secret-key
+```
+
+📖 **Detailed Instructions**: See [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 🎯 Usage
 

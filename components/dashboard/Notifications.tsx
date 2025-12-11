@@ -3,14 +3,14 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { notificationsApi } from '../../lib/apiClient';
-import { Bell, CheckCircle, XCircle, AlertCircle, Info, Trash2, Loader2 } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, AlertCircle, Info, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface NotificationsProps {
     onTabChange?: (tab: string) => void;
 }
 
-export function Notifications({ onTabChange }: NotificationsProps = {}) {
+export function Notifications({ }: NotificationsProps = {}) {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
