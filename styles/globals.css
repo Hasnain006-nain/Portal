@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
   --font-size: 16px;
   --background: #ffffff;
@@ -123,11 +121,13 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: hsl(var(--border));
+    outline-color: hsl(var(--ring) / 0.5);
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
@@ -254,27 +254,102 @@ html {
 /* Responsive container utilities */
 @layer utilities {
   .container-responsive {
-    @apply w-full max-w-full px-3 sm:px-4 md:px-6 lg:px-8;
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-responsive {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container-responsive {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-responsive {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
   }
 
   /* Prevent text overflow */
   .text-truncate-responsive {
-    @apply truncate max-w-full;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
 
   /* Responsive grid gaps */
   .gap-responsive {
-    @apply gap-2 sm:gap-3 md:gap-4 lg:gap-6;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .gap-responsive {
+      gap: 0.75rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .gap-responsive {
+      gap: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .gap-responsive {
+      gap: 1.5rem;
+    }
   }
 
   /* Responsive padding */
   .p-responsive {
-    @apply p-3 sm:p-4 md:p-6 lg:p-8;
+    padding: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .p-responsive {
+      padding: 1rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .p-responsive {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .p-responsive {
+      padding: 2rem;
+    }
   }
 
   /* Responsive spacing */
-  .space-y-responsive>*+* {
-    @apply mt-3 sm:mt-4 md:mt-6;
+  .space-y-responsive > * + * {
+    margin-top: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .space-y-responsive > * + * {
+      margin-top: 1rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .space-y-responsive > * + * {
+      margin-top: 1.5rem;
+    }
   }
 }
 
