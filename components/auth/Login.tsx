@@ -69,8 +69,8 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
           >
             <GraduationCap className="h-7 w-7 text-primary-foreground" />
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight mb-2">StudentZero Portal</h1>
-          <p className="text-muted-foreground text-sm">Sign in to access your student dashboard</p>
+          <h1 className="text-2xl font-bold tracking-tight mb-2 text-gradient">University Portal</h1>
+          <p className="text-muted-foreground text-sm">Sign in to access your academic dashboard</p>
         </motion.div>
 
         {/* Login Card */}
@@ -79,7 +79,7 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <Card className="p-6 shadow-xl">
+          <Card className="p-6 shadow-professional-xl border-0 bg-card/95 backdrop-blur-sm">
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email Field */}
               <motion.div
@@ -141,7 +141,7 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
               >
                 <Button
                   type="submit"
-                  className="w-full h-11 text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                  className="w-full h-11 text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-professional-lg hover:shadow-professional-xl hover:scale-[1.02] transition-all duration-200"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Signing in...' : 'Sign In'}
@@ -179,14 +179,14 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
               className="mt-6 pt-6 border-t border-border/50"
             >
               <p className="text-xs text-muted-foreground text-center mb-3 font-medium">Demo Credentials</p>
-              <div className="space-y-2 bg-muted/30 rounded-lg p-3">
+              <div className="space-y-2 bg-muted/50 rounded-lg p-3 border border-border/50">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground font-medium">Admin:</span>
-                  <span className="text-foreground font-mono">admin@university.edu / admin123</span>
+                  <span className="text-foreground font-mono bg-background/50 px-2 py-1 rounded">admin@university.edu / admin123</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground font-medium">Student:</span>
-                  <span className="text-foreground font-mono">john.doe@university.edu / student123</span>
+                  <span className="text-foreground font-mono bg-background/50 px-2 py-1 rounded">john.doe@university.edu / student123</span>
                 </div>
               </div>
             </motion.div>

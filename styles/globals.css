@@ -1,273 +1,120 @@
 @import "tailwindcss";
 
+/* Professional University Portal Theme */
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Light Theme - Professional Blue */
+  --background: 255 255 255;
+  --foreground: 15 23 42;
+  --card: 255 255 255;
+  --card-foreground: 15 23 42;
+  --popover: 255 255 255;
+  --popover-foreground: 15 23 42;
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 241 245 249;
+  --secondary-foreground: 15 23 42;
+  --muted: 248 250 252;
+  --muted-foreground: 100 116 139;
+  --accent: 241 245 249;
+  --accent-foreground: 15 23 42;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 226 232 240;
+  --input: 226 232 240;
+  --ring: 59 130 246;
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  /* Dark Theme - Professional Dark Blue */
+  --background: 2 6 23;
+  --foreground: 248 250 252;
+  --card: 15 23 42;
+  --card-foreground: 248 250 252;
+  --popover: 15 23 42;
+  --popover-foreground: 248 250 252;
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 30 41 59;
+  --secondary-foreground: 248 250 252;
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  --accent: 30 41 59;
+  --accent-foreground: 248 250 252;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 30 41 59;
+  --input: 30 41 59;
+  --ring: 59 130 246;
 }
 
 @layer base {
   * {
     border-color: hsl(var(--border));
-    outline-color: hsl(var(--ring) / 0.5);
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/**
- * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
- */
+/* Professional Enhancements */
 @layer base {
-  :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
-    h1 {
-      font-size: var(--text-2xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    h2 {
-      font-size: var(--text-xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    h3 {
-      font-size: var(--text-lg);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    h4 {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    p {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-normal);
-      line-height: 1.5;
-    }
-
-    label {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    button {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    input {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-normal);
-      line-height: 1.5;
-    }
+  html {
+    font-size: var(--font-size);
+    scroll-behavior: smooth;
   }
-}
 
-html {
-  font-size: var(--font-size);
-}
-
-/* Responsive fixes for all devices */
-@layer base {
-
-  html,
   body {
-    @apply overflow-x-hidden;
-    width: 100%;
-    max-width: 100vw;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Ensure proper box-sizing */
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
+  /* Professional button hover effects */
+  .btn-hover {
+    transition: all 0.2s ease-in-out;
   }
 
-  /* Prevent horizontal scroll on mobile */
-  body {
-    position: relative;
-    overflow-x: hidden;
+  .btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  /* Fix for iOS Safari viewport height */
-  @supports (-webkit-touch-callout: none) {
-    body {
-      min-height: -webkit-fill-available;
-    }
+  /* Professional card shadows */
+  .card-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   }
 
-  /* Global fix for main content padding */
-  main {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+  .card-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
-  main>div {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+  /* Professional gradients */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
   }
 
-  /* Ensure grids align properly */
-  .grid {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Ensure cards don't overflow */
-  [class*="Card"] {
-    box-sizing: border-box;
-  }
-
-  /* Remove extra spacing below navbar */
-  nav+div {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+  .gradient-secondary {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--muted)) 100%);
   }
 }
 
-/* Responsive container utilities */
+/* Responsive Design */
 @layer utilities {
   .container-responsive {
     width: 100%;
     max-width: 100%;
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   @media (min-width: 640px) {
-    .container-responsive {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-  }
-
-  @media (min-width: 768px) {
     .container-responsive {
       padding-left: 1.5rem;
       padding-right: 1.5rem;
@@ -281,1360 +128,184 @@ html {
     }
   }
 
-  /* Prevent text overflow */
-  .text-truncate-responsive {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
+  /* Professional text styles */
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Responsive grid gaps */
-  .gap-responsive {
-    gap: 0.5rem;
+  /* Professional animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
   }
 
-  @media (min-width: 640px) {
-    .gap-responsive {
-      gap: 0.75rem;
-    }
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
   }
 
-  @media (min-width: 768px) {
-    .gap-responsive {
-      gap: 1rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .gap-responsive {
-      gap: 1.5rem;
-    }
-  }
-
-  /* Responsive padding */
-  .p-responsive {
-    padding: 0.75rem;
-  }
-
-  @media (min-width: 640px) {
-    .p-responsive {
-      padding: 1rem;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .p-responsive {
-      padding: 1.5rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .p-responsive {
-      padding: 2rem;
-    }
-  }
-
-  /* Responsive spacing */
-  .space-y-responsive > * + * {
-    margin-top: 0.75rem;
-  }
-
-  @media (min-width: 640px) {
-    .space-y-responsive > * + * {
-      margin-top: 1rem;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .space-y-responsive > * + * {
-      margin-top: 1.5rem;
-    }
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
   }
 }
 
-/* Fix for dialog/modal overflow on mobile */
-@layer components {
-  [role="dialog"] {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    margin: 0 !important;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
-/* Tablet-specific responsive fixes for iPad and Surface devices */
-@media (min-width: 768px) and (max-width: 1024px) {
-
-  /* iPad and Surface Pro optimizations */
-  html {
-    font-size: 15px;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-
-  /* Better grid spacing for tablets */
-  .grid {
-    gap: 0.75rem !important;
-  }
-
-  /* Ensure proper card sizing on tablets */
-  [class*="grid-cols-3"]>* {
-    min-width: 0;
-  }
-
-  [class*="grid-cols-4"]>* {
-    min-width: 0;
-  }
-
-  /* Better text sizing on tablets */
-  h1 {
-    font-size: 1.75rem !important;
-  }
-
-  h2 {
-    font-size: 1.5rem !important;
-  }
-
-  h3 {
-    font-size: 1.25rem !important;
-  }
-
-  /* Optimize padding for tablet screens */
-  [class*="p-8"] {
-    padding: 1.5rem !important;
-  }
-
-  [class*="p-6"] {
-    padding: 1.25rem !important;
-  }
-
-  /* Better spacing for tablet layouts */
-  [class*="space-y-6"]>*+* {
-    margin-top: 1rem !important;
-  }
-
-  /* Ensure cards fit properly */
-  [class*="Card"] {
-    padding: 1rem !important;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Specific fixes for iPad Pro and Surface Pro 7 (larger tablets) */
-@media (min-width: 1024px) and (max-width: 1366px) {
-  html {
-    font-size: 15.5px;
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
-
-  .grid {
-    gap: 1rem !important;
-  }
-}
-
-/* Portrait mode fixes for tablets */
-@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
-
-  /* Adjust grid columns for portrait tablets */
-  [class*="md:grid-cols-4"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  [class*="md:grid-cols-3"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* Landscape mode fixes for tablets */
-@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
-
-  /* Keep 4 columns but with tighter spacing */
-  [class*="md:grid-cols-4"] {
-    gap: 0.5rem !important;
+/* Professional Focus States */
+@layer base {
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
-  [class*="md:grid-cols-3"] {
-    gap: 0.75rem !important;
-  }
-}
-
-/* Google Nest Hub and Nest Hub Max specific fixes */
-/* Nest Hub: 1024x600 */
-@media (min-width: 1024px) and (max-width: 1024px) and (min-height: 600px) and (max-height: 600px) {
-  html {
-    font-size: 14px;
+  /* Professional scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
   }
 
-  /* Compact layout for Nest Hub */
-  [class*="p-8"] {
-    padding: 1rem !important;
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
   }
 
-  [class*="p-6"] {
-    padding: 0.75rem !important;
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
   }
 
-  [class*="space-y-6"]>*+* {
-    margin-top: 0.75rem !important;
-  }
-
-  /* Tighter grid spacing */
-  .grid {
-    gap: 0.5rem !important;
-  }
-
-  /* Smaller text for compact display */
-  h1 {
-    font-size: 1.5rem !important;
-  }
-
-  h2 {
-    font-size: 1.25rem !important;
-  }
-
-  h3 {
-    font-size: 1.125rem !important;
-  }
-
-  /* Optimize card padding */
-  [class*="Card"] {
-    padding: 0.75rem !important;
-  }
-
-  /* Make 4-column grids fit better */
-  [class*="grid-cols-4"] {
-    gap: 0.5rem !important;
-  }
-
-  [class*="grid-cols-3"] {
-    gap: 0.5rem !important;
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }
 
-/* Nest Hub Max: 1280x800 */
-@media (min-width: 1280px) and (max-width: 1280px) and (min-height: 800px) and (max-height: 800px) {
-  html {
-    font-size: 15px;
+/* Dark mode specific enhancements */
+.dark {
+  /* Better contrast for dark mode */
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  
+  /* Professional dark shadows */
+  .card-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 
-  /* Slightly more spacious than Nest Hub */
-  [class*="p-8"] {
-    padding: 1.25rem !important;
-  }
-
-  [class*="p-6"] {
-    padding: 1rem !important;
-  }
-
-  [class*="space-y-6"]>*+* {
-    margin-top: 1rem !important;
-  }
-
-  .grid {
-    gap: 0.75rem !important;
-  }
-
-  h1 {
-    font-size: 1.625rem !important;
-  }
-
-  h2 {
-    font-size: 1.375rem !important;
-  }
-
-  h3 {
-    font-size: 1.25rem !important;
-  }
-
-  [class*="Card"] {
-    padding: 1rem !important;
+  .card-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   }
 }
 
-/* General fixes for landscape-oriented smart displays (Nest Hub family) */
-@media (min-width: 1024px) and (max-height: 800px) and (orientation: landscape) {
-
-  /* Optimize vertical space usage */
-  body {
-    overflow-y: auto;
-  }
-
-  /* Reduce vertical spacing */
-  [class*="mb-6"] {
-    margin-bottom: 1rem !important;
-  }
-
-  [class*="mb-4"] {
-    margin-bottom: 0.75rem !important;
-  }
-
-  [class*="mt-6"] {
-    margin-top: 1rem !important;
-  }
-
-  [class*="mt-4"] {
-    margin-top: 0.75rem !important;
-  }
-
-  /* Compact navbar for limited height */
-  nav {
-    height: 3.5rem !important;
-    min-height: 3.5rem !important;
-  }
-
-  /* Ensure content fits in viewport */
-  main {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
-  }
-
-  /* Compact cards */
-  [class*="Card"] {
-    padding: 0.75rem 1rem !important;
-  }
-
-  /* Smaller stat cards */
-  [class*="grid-cols-3"]>[class*="Card"],
-  [class*="grid-cols-4"]>[class*="Card"] {
-    padding: 0.5rem 0.75rem !important;
-  }
-
-  /* Reduce heading sizes for compact displays */
-  h1 {
-    font-size: 1.5rem !important;
-    margin-bottom: 0.5rem !important;
-  }
-
-  h2 {
-    font-size: 1.25rem !important;
-  }
-
-  h3 {
-    font-size: 1.125rem !important;
-  }
-
-  /* Compact buttons */
-  button {
-    padding: 0.5rem 1rem !important;
-    font-size: 0.875rem !important;
-  }
-}
-
-/* Ultra-compact mode for very limited vertical space */
-@media (max-height: 600px) and (orientation: landscape) {
-  html {
-    font-size: 13px;
-  }
-
-  /* Minimal padding everywhere */
-  [class*="p-8"],
-  [class*="p-6"],
-  [class*="p-4"] {
-    padding: 0.5rem !important;
-  }
-
-  /* Minimal spacing */
-  [class*="space-y-6"]>*+*,
-  [class*="space-y-4"]>*+*,
-  [class*="space-y-3"]>*+* {
-    margin-top: 0.5rem !important;
-  }
-
-  /* Very compact navbar */
-  nav {
-    height: 3rem !important;
-    min-height: 3rem !important;
-  }
-
-  /* Minimal grid gaps */
-  .grid {
-    gap: 0.375rem !important;
-  }
-
-  /* Compact text */
-  h1 {
-    font-size: 1.25rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-
-  h2 {
-    font-size: 1.125rem !important;
-  }
-
-  h3 {
-    font-size: 1rem !important;
-  }
-
-  p {
-    font-size: 0.875rem !important;
-  }
-
-  /* Hide less important elements on very small heights */
-  [class*="text-muted-foreground"] {
-    font-size: 0.75rem !important;
-  }
-}
-
-/* 
-Sidebar optimization for landscape displays with limited width */
-@media (min-width: 1024px) and (max-width: 1280px) and (max-height: 800px) {
-
-  /* Make sidebar narrower on Nest Hub devices */
-  aside {
-    width: 12rem !important;
-    padding: 0.75rem !important;
-  }
-
-  /* Compact sidebar items */
-  aside button {
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.875rem !important;
-  }
-
-  /* Smaller icons in sidebar */
-  aside svg {
-    width: 1rem !important;
-    height: 1rem !important;
-  }
-
-  /* Hide "Need help?" section on compact displays */
-  aside>div:last-child {
-    display: none !important;
-  }
-}
-
-/* Optimize main content area for Nest Hub displays */
-@media (min-width: 1024px) and (max-width: 1280px) and (max-height: 800px) {
-
-  /* Reduce main content padding */
-  main {
-    padding: 0.75rem 1rem !important;
-  }
-
-  /* Ensure content doesn't overflow */
-  main>div {
-    max-width: 100% !important;
-  }
-
-  /* Compact stat cards */
-  [class*="grid-cols-3"] {
-    gap: 0.5rem !important;
-  }
-
-  [class*="grid-cols-4"] {
-    gap: 0.5rem !important;
-  }
-
-  /* Smaller card padding */
-  [class*="grid-cols-3"]>*>*,
-  [class*="grid-cols-4"]>*>* {
-    padding: 0.5rem !important;
-  }
-
-  /* Compact text in cards */
-  [class*="grid-cols-3"] h2,
-  [class*="grid-cols-4"] h3 {
-    font-size: 1.125rem !important;
-  }
-
-  [class*="grid-cols-3"] p,
-  [class*="grid-cols-4"] p {
-    font-size: 0.75rem !important;
-  }
-}
-
-/* Ensure no horizontal scrolling on any device */
-@media (max-width: 1280px) {
-  * {
-    max-width: 100vw;
-  }
-
-  body,
-  html,
-  #root {
-    overflow-x: hidden !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-  }
-}
-
-/* ============================================
-   SPECIFIC IPAD DEVICE FIXES
-   ============================================ */
-
-/* iPad Mini (768x1024 portrait, 1024x768 landscape) */
-@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
-
-  html {
-    font-size: 14px !important;
-  }
-
-  body {
-    overflow-x: hidden !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-  }
-
-  /* Compact everything */
-  * {
-    box-sizing: border-box !important;
-  }
-
-  /* Reduce all padding */
-  [class*="p-8"] {
-    padding: 1rem !important;
-  }
-
-  [class*="p-6"] {
-    padding: 0.875rem !important;
-  }
-
-  [class*="p-4"] {
-    padding: 0.75rem !important;
-  }
-
-  /* Reduce all margins */
-  [class*="mb-6"] {
-    margin-bottom: 0.875rem !important;
-  }
-
-  [class*="mb-4"] {
-    margin-bottom: 0.75rem !important;
-  }
-
-  [class*="space-y-6"]>*+* {
-    margin-top: 0.875rem !important;
-  }
-
-  /* Tighter grids */
-  .grid {
-    gap: 0.625rem !important;
-  }
-
-  [class*="gap-6"] {
-    gap: 0.625rem !important;
-  }
-
-  [class*="gap-4"] {
-    gap: 0.5rem !important;
-  }
-
-  /* Smaller text */
-  h1 {
-    font-size: 1.5rem !important;
-  }
-
-  h2 {
-    font-size: 1.25rem !important;
-  }
-
-  h3 {
-    font-size: 1.125rem !important;
-  }
-
-  /* Compact cards */
-  [class*="Card"] {
-    padding: 0.75rem !important;
-  }
-
-  /* Sidebar */
-  aside {
-    width: 13rem !important;
-  }
-
-  /* Main content */
-  main {
-    padding: 0.75rem 1rem !important;
-  }
-}
-
-/* iPad Air (820x1180 portrait, 1180x820 landscape) */
-@media only screen and (min-device-width: 820px) and (max-device-width: 1180px) and (-webkit-min-device-pixel-ratio: 2) {
-
-  html {
-    font-size: 14.5px !important;
-  }
-
-  body {
-    overflow-x: hidden !important;
-    width: 100vw !important;
-  }
-
-  [class*="p-8"] {
-    padding: 1.125rem !important;
-  }
-
-  [class*="p-6"] {
-    padding: 1rem !important;
-  }
-
-  .grid {
-    gap: 0.75rem !important;
-  }
-
-  h1 {
-    font-size: 1.625rem !important;
-  }
-
-  h2 {
-    font-size: 1.375rem !important;
-  }
-
-  h3 {
-    font-size: 1.25rem !important;
-  }
-
-  aside {
-    width: 14rem !important;
-  }
-
-  main {
-    padding: 1rem 1.25rem !important;
-  }
-}
-
-/* iPad Pro 11" (834x1194 portrait, 1194x834 landscape) */
-@media only screen and (min-device-width: 834px) and (max-device-width: 1194px) and (-webkit-min-device-pixel-ratio: 2) {
-
-  html {
-    font-size: 15px !important;
-  }
-
-  body {
-    overflow-x: hidden !important;
-    width: 100vw !important;
-  }
-
-  [class*="p-8"] {
-    padding: 1.25rem !important;
-  }
-
-  [class*="p-6"] {
-    padding: 1.125rem !important;
-  }
-
-  .grid {
-    gap: 0.875rem !important;
-  }
-
-  h1 {
-    font-size: 1.75rem !important;
-  }
-
-  h2 {
-    font-size: 1.5rem !important;
-  }
-
-  h3 {
-    font-size: 1.375rem !important;
-  }
-
-  main {
-    padding: 1.125rem 1.5rem !important;
-  }
-}
-
-/* iPad Pro 12.9" (1024x1366 portrait, 1366x1024 landscape) */
-@media only screen and (min-device-width: 1024px) and (max-device-width: 1366px) and (-webkit-min-device-pixel-ratio: 2) {
-
-  html {
-    font-size: 15.5px !important;
-  }
-
-  body {
-    overflow-x: hidden !important;
-    width: 100vw !important;
-  }
-
-  [class*="p-8"] {
-    padding: 1.5rem !important;
-  }
-
-  [class*="p-6"] {
-    padding: 1.25rem !important;
-  }
-
-  .grid {
-    gap: 1rem !important;
-  }
-
-  h1 {
-    font-size: 1.875rem !important;
-  }
-
-  h2 {
-    font-size: 1.625rem !important;
-  }
-
-  h3 {
-    font-size: 1.5rem !important;
-  }
-
-  main {
-    padding: 1.25rem 1.75rem !important;
-  }
-}
-
-/* ============================================
-   PORTRAIT MODE SPECIFIC FIXES FOR ALL IPADS
-   ============================================ */
-@media only screen and (min-device-width: 768px) and (max-device-width: 1366px) and (orientation: portrait) {
-
-  /* Force 2 columns for 4-column grids in portrait */
-  [class*="md:grid-cols-4"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  /* Keep 3 columns as 3 or make 2 */
-  [class*="md:grid-cols-3"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  /* Reduce gap in portrait */
-  .grid {
-    gap: 0.625rem !important;
-  }
-
-  /* Stack buttons vertically */
-  [class*="flex-row"] {
-    flex-direction: column !important;
-  }
-
-  /* Full width buttons in portrait */
-  button {
-    width: 100% !important;
-  }
-}
-
-/* ============================================
-   LANDSCAPE MODE SPECIFIC FIXES FOR ALL IPADS
-   ============================================ */
-@media only screen and (min-device-width: 768px) and (max-device-width: 1366px) and (orientation: landscape) {
-
-  /* Optimize for limited height */
-  nav {
-    height: 3.5rem !important;
-    min-height: 3.5rem !important;
-  }
-
-  /* Reduce vertical spacing */
-  [class*="space-y-6"]>*+* {
-    margin-top: 0.75rem !important;
-  }
-
-  [class*="space-y-4"]>*+* {
-    margin-top: 0.5rem !important;
-  }
-
-  [class*="mb-6"] {
-    margin-bottom: 0.75rem !important;
-  }
-
-  [class*="mb-4"] {
-    margin-bottom: 0.5rem !important;
-  }
-
-  /* Compact main content */
-  main {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
-  }
-
-  /* Keep 4 columns but tighter */
-  [class*="md:grid-cols-4"] {
-    gap: 0.5rem !important;
-  }
-
-  [class*="md:grid-cols-3"] {
-    gap: 0.625rem !important;
-  }
-
-  /* Smaller cards in landscape */
-  [class*="Card"] {
-    padding: 0.625rem 0.875rem !important;
-  }
-
-  /* Compact stat numbers */
-  [class*="grid-cols-3"] h2,
-  [class*="grid-cols-4"] h3 {
-    font-size: 1.25rem !important;
-  }
-}
-
-/* ============================================
-   FORCE FIT - NUCLEAR OPTION FOR ALL TABLETS
-   ============================================ */
-@media (min-width: 768px) and (max-width: 1366px) {
-
-  /* Prevent ANY overflow */
-  * {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-  }
-
-  html,
-  body,
-  #root {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
-
-  /* Ensure all containers fit */
-  div,
-  section,
-  main,
-  aside,
-  nav {
-    max-width: 100% !important;
-  }
-
-  /* Force grid items to fit */
-  [class*="grid"]>* {
-    min-width: 0 !important;
-    max-width: 100% !important;
-  }
-
-  /* Prevent text overflow */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  span,
-  div {
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-  }
-
-  /* Ensure images fit */
-  img {
-    max-width: 100% !important;
-    height: auto !important;
-  }
-
-  /* Compact everything by default */
-  [class*="p-8"] {
-    padding: 1rem !important;
-  }
-
-  [class*="p-6"] {
-    padding: 0.875rem !important;
-  }
-
-  [class*="p-4"] {
-    padding: 0.75rem !important;
-  }
-
-  [class*="gap-6"] {
-    gap: 0.75rem !important;
-  }
-
-  [class*="gap-4"] {
-    gap: 0.625rem !important;
-  }
-
-  [class*="gap-3"] {
-    gap: 0.5rem !important;
-  }
-}
-
-/* ============================================
-   FIX EMPTY LEFT SPACE ON TABLETS
-   ============================================ */
-
-/* Remove max-width constraint on tablets to use full width */
-@media (min-width: 768px) and (max-width: 1279px) {
-
-  /* Main content should use full width with minimal padding */
-  main {
-    padding: 0.75rem !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0.75rem !important;
-  }
-
-  /* Ensure all cards and containers use full width */
-  [class*="Card"],
-  [class*="card"] {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Grid containers should use full width */
-  .grid {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Remove any centering that creates empty space */
-  .mx-auto {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-
-  /* Ensure content stretches to fill available space */
-  [class*="space-y"] {
-    width: 100% !important;
-  }
-}
-
-/* Specific fix for dashboard content alignment */
-@media (min-width: 768px) and (max-width: 1279px) {
-
-  /* Dashboard should use full width */
-  main {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Remove any max-width constraints */
-  [class*="max-w-7xl"],
-  [class*="max-w-6xl"],
-  [class*="max-w-5xl"],
-  [class*="max-w-4xl"] {
-    max-width: 100% !important;
-  }
-
-  /* Ensure proper padding instead of margins */
-  main>div {
-    padding: 1rem !important;
-  }
-
-  /* Cards should fill container */
-  [class*="Card"] {
-    box-sizing: border-box !important;
-  }
-
-  /* Grid items should not have min-width that causes overflow */
-  .grid>* {
-    min-width: 0 !important;
-  }
-}
-
-/* Mobile layout */
-@media (max-width: 767px) {
-
-  main {
-    padding: 1rem !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .grid {
-    gap: 0.75rem !important;
-  }
-
-  [class*="Card"] {
-    padding: 0.875rem !important;
-  }
-
-  /* Ensure navbar is compact on mobile */
-  nav {
-    height: 3.5rem !important;
-    padding: 0.5rem 0.75rem !important;
-  }
-}
-
-/* Tablet full width layout */
-@media (min-width: 768px) and (max-width: 1023px) {
-
-  main {
-    padding: 1.5rem !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .grid {
-    gap: 1rem !important;
-  }
-
-  [class*="Card"] {
-    padding: 1rem !important;
-  }
-}
-
-/* ============================================
-   LAPTOP SCREENS (1024px - 1279px)
-   ============================================ */
-@media (min-width: 1024px) and (max-width: 1279px) {
-
-  main {
-    padding: 1.5rem 2rem !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: 1 !important;
-    min-width: 0 !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Proper grid gaps for laptops */
-  .grid {
-    gap: 1.25rem !important;
-  }
-
-  /* Card padding for laptops */
-  [class*="Card"] {
-    padding: 1.25rem !important;
-  }
-}
-
-/* NEST HUB AND NEST HUB MAX - COMPACT DISPLAY FIX */
-@media (min-width: 1024px) and (max-width: 1280px) and (max-height: 800px) {
-
-  /* Override for very short screens */
-  main {
-    padding: 0.75rem !important;
-  }
-
-  aside {
-    position: fixed !important;
-    left: -100% !important;
-  }
-}
-
-/* ============================================
-   LARGE DESKTOP SCREENS - FULL WIDTH
-   ============================================ */
-
-/* For screens 1280px and above - use full width */
-@media (min-width: 1280px) {
-
-  /* Main container with minimal padding */
-  main {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 2rem !important;
-    flex: 1 !important;
-    min-width: 0 !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Grids should use full width of container */
-  .grid {
-    width: 100% !important;
-    gap: 1.5rem !important;
-  }
-
-  /* Proper card padding on desktop */
-  [class*="Card"] {
-    padding: 1.5rem !important;
-  }
-}
-
-/* For very large screens (1440px+) - full width */
-@media (min-width: 1440px) {
-
-  main {
-    padding: 2rem !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Increase grid gaps for better spacing on large screens */
-  .grid {
-    gap: 2rem !important;
-  }
-
-  [class*="gap-6"] {
-    gap: 2rem !important;
-  }
-
-  /* Larger card padding */
-  [class*="Card"] {
-    padding: 2rem !important;
-  }
-}
-
-/* For ultra-wide screens (1920px+) */
-@media (min-width: 1920px) {
-
-  main {
-    padding: 2.5rem 3rem !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .grid {
-    gap: 2.5rem !important;
-  }
-
-  /* Larger card padding */
-  [class*="Card"] {
-    padding: 2.5rem !important;
-  }
-
-  /* Larger text on ultra-wide screens */
-  h1 {
-    font-size: 2.5rem !important;
-  }
-
-  h2 {
-    font-size: 2rem !important;
-  }
-
-  h3 {
-    font-size: 1.75rem !important;
-  }
-}
-
-/* ============================================
-   GLOBAL RESPONSIVE LAYOUT
-   ============================================ */
-
-/* Desktop layout - NO SIDEBAR, full width content */
-@media (min-width: 1024px) {
-
-  /* Hide sidebar completely on desktop */
-  aside {
-    display: none !important;
-  }
-
-  /* Main content uses full width */
-  main {
-    flex: 1 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  main>div {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-}
-
-/* Mobile/Tablet sidebar */
-@media (max-width: 1023px) {
-
-  /* Sidebar is fixed overlay on mobile/tablet */
-  aside {
-    position: fixed !important;
-    width: 16rem !important;
-    height: 100vh !important;
-    z-index: 50 !important;
-    left: 0 !important;
-    top: 0 !important;
-  }
-
-  /* Main content uses full width on mobile */
-  main {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-}
-
-/* Ensure proper flex layout */
-body>div,
-#root,
-#root>div {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Di
-alog centering */
-.dialog-centered {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  margin: 0 !important;
-}
-
-/* 
-============================================
-   STUDENT CARD RESPONSIVE ENHANCEMENTS
-   ============================================ */
-
-/* Mobile optimizations for student cards */
-@media (max-width: 640px) {
-
-  /* Ensure cards are touch-friendly on mobile */
-  [class*="Card"] {
-    min-height: 44px;
-    /* iOS recommended touch target */
-  }
-
-  /* Better spacing for 2-column grid on mobile */
-  .grid-cols-2 {
-    gap: 0.5rem !important;
-  }
-
-  /* Ensure text is readable on small screens */
-  [class*="truncate"] {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-/* Tablet optimizations (3-4 columns) */
-@media (min-width: 640px) and (max-width: 1024px) {
-
-  /* Optimize card padding for tablets */
-  .grid>[class*="Card"] {
-    padding: 0.625rem !important;
-  }
-
-  /* Better grid gaps for tablets */
-  .grid {
-    gap: 0.75rem !important;
-  }
-}
-
-/* Desktop optimizations (5 columns) */
-@media (min-width: 1024px) {
-
-  /* Ensure 5-column grid has proper spacing */
-  .lg\:grid-cols-5 {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  }
-
-  /* Hover effects only on desktop */
-  [class*="Card"]:hover {
-    transform: scale(1.02);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* Large desktop (maintain 5 columns) */
-@media (min-width: 1280px) {
-  .xl\:grid-cols-5 {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  }
-
-  /* More generous spacing on large screens */
-  .grid {
-    gap: 1rem !important;
-  }
-}
-
-/* Ultra-wide screens (still 5 columns but larger cards) */
-@media (min-width: 1920px) {
-  .grid>[class*="Card"] {
-    padding: 1rem !important;
-  }
-
-  /* Larger text on ultra-wide */
-  .grid [class*="text-"] {
-    font-size: 1.1em !important;
-  }
-}
-
-/* Touch device optimizations */
-@media (hover: none) and (pointer: coarse) {
-
-  /* Always show action buttons on touch devices */
-  .group .opacity-0 {
-    opacity: 1 !important;
-  }
-
-  /* Larger touch targets */
-  button {
+/* Professional Mobile Optimizations */
+@media (max-width: 768px) {
+  .container-responsive {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Better touch targets */
+  button, .btn {
     min-height: 44px;
     min-width: 44px;
   }
 
-  /* Remove hover effects on touch devices */
-  [class*="hover\:scale-"] {
-    transform: none !important;
+  /* Improved mobile typography */
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
   }
 }
 
-/* Landscape mobile optimization */
-@media (max-width: 896px) and (orientation: landscape) {
+/* Professional Loading States */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
 
-  /* Use 3 columns in landscape mobile */
-  .grid-cols-2 {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    left: -100%;
   }
-
-  /* Compact padding in landscape */
-  .grid>[class*="Card"] {
-    padding: 0.5rem !important;
+  100% {
+    left: 100%;
   }
 }
 
-/* iPad specific optimizations */
-@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
-
-  /* 4 columns on iPad portrait */
-  @media (orientation: portrait) {
-    .md\:grid-cols-4 {
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    }
-  }
-
-  /* 5 columns on iPad landscape */
-  @media (orientation: landscape) {
-    .lg\:grid-cols-5 {
-      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    }
-  }
+/* Professional Error States */
+.error-state {
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive));
 }
 
-/* Accessibility improvements */
-@media (prefers-reduced-motion: reduce) {
-
-  /* Disable animations for users who prefer reduced motion */
-  [class*="transition-"],
-  [class*="animate-"] {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+.success-state {
+  color: hsl(120 100% 25%);
+  border-color: hsl(120 100% 25%);
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  [class*="Card"] {
-    border-width: 2px !important;
-  }
+/* Professional Hover Effects */
+.hover-lift {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
 
-  button {
-    border-width: 2px !important;
-  }
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Professional Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
