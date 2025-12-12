@@ -1,4 +1,16 @@
-// Mock data for all features
+// Environment variables with defaults for demo
+const DB_CONFIG = {
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'demo_user',
+    password: process.env.DB_PASSWORD || 'demo_password',
+    database: process.env.DB_NAME || 'studentportal',
+    port: process.env.DB_PORT || 3306
+};
+
+const JWT_SECRET = process.env.JWT_SECRET || 'demo-jwt-secret-key-for-development-only';
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// Mock data for all features (simulating database)
 const mockData = {
     students: [
         { id: 1, student_id: 'STU001', name: 'John Doe', email: 'john.doe@university.edu', department: 'Computer Science', year: 2, status: 'active' },
@@ -49,7 +61,17 @@ export default function handler(req, res) {
 
     // Health check
     if (url === '/api/health') {
-        res.status(200).json({ status: 'ok', message: 'Server running' });
+        res.status(200).json({ 
+            status: 'ok', 
+            message: 'Server running',
+            environment: NODE_ENV,
+            database: {
+                host: DB_CONFIG.host,
+                database: DB_CONFIG.database,
+                connected: true // Mock connection status
+            },
+            timestamp: new Date().toISOString()
+        });
         return;
     }
     
