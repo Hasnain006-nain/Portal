@@ -128,10 +128,10 @@ chmod +x deploy.sh
 ```
 
 ### Manual Deployment
-1. **Database Setup**: Create MySQL database (PlanetScale recommended)
+1. **Database Setup**: Create MySQL database
 2. **Build**: `npm run build`
-3. **Deploy**: `vercel --prod`
-4. **Configure**: Set environment variables in Vercel dashboard
+3. **Deploy**: Upload to your hosting provider
+4. **Configure**: Set environment variables in your hosting dashboard
 
 ### Environment Variables (Required)
 ```env

@@ -44,11 +44,5 @@ lerna-debug.log*
 # Misc
 *.zip
 
-# Vercel
-.vercel
-
 # Temporary files
 temp_*.txt
-
-.vercel
-.env*.local

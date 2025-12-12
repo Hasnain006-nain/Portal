@@ -1,5 +1,5 @@
 // Real API client for MySQL backend
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5002/api');
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
 
 // Store auth token
 let authToken: string | null = null;
