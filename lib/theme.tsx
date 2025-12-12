@@ -13,8 +13,11 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
     const [theme, setTheme] = useState<Theme>(() => {
-        const stored = localStorage.getItem('theme') as Theme;
-        return stored || 'dark';
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('theme') as Theme;
+            return stored || 'dark';
+        }
+        return 'dark';
     });
 
     const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
@@ -35,7 +38,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         };
 
         applyTheme(theme);
-        localStorage.setItem('theme', theme);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('theme', theme);
+        }
 
         if (theme === 'system') {
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

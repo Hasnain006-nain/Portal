@@ -55,7 +55,14 @@ export default function handler(req, res) {
     
     // AUTH ENDPOINTS
     if (url === '/api/auth/login' && method === 'POST') {
-        const { email, password } = req.body;
+        let body = {};
+        try {
+            body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+        } catch (e) {
+            res.status(400).json({ error: 'Invalid JSON in request body' });
+            return;
+        }
+        const { email, password } = body;
         
         if (email === 'admin@university.edu' && password === 'admin123') {
             res.status(200).json({
@@ -74,6 +81,13 @@ export default function handler(req, res) {
     }
     
     if (url === '/api/auth/register' && method === 'POST') {
+        let body = {};
+        try {
+            body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+        } catch (e) {
+            res.status(400).json({ error: 'Invalid JSON in request body' });
+            return;
+        }
         res.status(201).json({ message: 'Registration submitted. Awaiting admin approval.', userId: Math.floor(Math.random() * 1000) });
         return;
     }

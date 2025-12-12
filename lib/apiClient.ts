@@ -2,15 +2,22 @@
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5002/api');
 
 // Store auth token
-let authToken: string | null = localStorage.getItem('authToken');
+let authToken: string | null = null;
+
+// Initialize auth token safely
+if (typeof window !== 'undefined' && window.localStorage) {
+    authToken = localStorage.getItem('authToken');
+}
 
 // Helper to set auth token
 export const setAuthToken = (token: string | null) => {
     authToken = token;
-    if (token) {
-        localStorage.setItem('authToken', token);
-    } else {
-        localStorage.removeItem('authToken');
+    if (typeof window !== 'undefined' && window.localStorage) {
+        if (token) {
+            localStorage.setItem('authToken', token);
+        } else {
+            localStorage.removeItem('authToken');
+        }
     }
 };
 
