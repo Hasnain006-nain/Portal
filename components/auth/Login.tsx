@@ -63,13 +63,13 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
           className="text-center mb-8"
         >
           <motion.div
-            className="inline-flex h-14 w-14 bg-gradient-to-br from-primary to-primary/70 rounded-xl items-center justify-center mb-4 shadow-lg shadow-primary/20"
+            className="inline-flex h-14 w-14 bg-primary rounded-xl items-center justify-center mb-4 shadow-lg"
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
             <GraduationCap className="h-7 w-7 text-primary-foreground" />
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight mb-2 text-gradient">University Portal</h1>
+          <h1 className="text-2xl font-bold tracking-tight mb-2 text-foreground">University Portal</h1>
           <p className="text-muted-foreground text-sm">Sign in to access your academic dashboard</p>
         </motion.div>
 
@@ -79,7 +79,7 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <Card className="p-6 shadow-professional-xl border-0 bg-card/95 backdrop-blur-sm">
+          <Card className="p-6 shadow-lg border bg-card">
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email Field */}
               <motion.div
@@ -141,7 +141,7 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
               >
                 <Button
                   type="submit"
-                  className="w-full h-11 text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-professional-lg hover:shadow-professional-xl hover:scale-[1.02] transition-all duration-200"
+                  className="w-full h-11 text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Signing in...' : 'Sign In'}
