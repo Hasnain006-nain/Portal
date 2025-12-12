@@ -311,6 +311,31 @@ async function initializeDatabase() {
             )
         `);
 
+        // Create default admin user if it doesn't exist
+        const bcrypt = require('bcryptjs');
+        const [adminExists] = await connection.query('SELECT id FROM users WHERE email = ?', ['admin@university.edu']);
+        
+        if (adminExists.length === 0) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            await connection.query(
+                'INSERT INTO users (email, password, name, role, approved) VALUES (?, ?, ?, ?, ?)',
+                ['admin@university.edu', hashedPassword, 'System Administrator', 'admin', true]
+            );
+            console.log('✓ Default admin user created: admin@university.edu / admin123');
+        }
+
+        // Create default student user if it doesn't exist
+        const [studentExists] = await connection.query('SELECT id FROM users WHERE email = ?', ['john.doe@university.edu']);
+        
+        if (studentExists.length === 0) {
+            const hashedPassword = await bcrypt.hash('student123', 10);
+            await connection.query(
+                'INSERT INTO users (email, password, name, role, approved, department, year) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                ['john.doe@university.edu', hashedPassword, 'John Doe', 'student', true, 'Computer Science', 2]
+            );
+            console.log('✓ Default student user created: john.doe@university.edu / student123');
+        }
+
         console.log('✓ Database tables created successfully');
     } catch (error) {
         console.error('Error creating tables:', error);

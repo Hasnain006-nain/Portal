@@ -36,58 +36,71 @@ async function connectDB() {
 
 // Initialize routes
 async function initializeRoutes() {
-    const db = await connectDB();
+    try {
+        const db = await connectDB();
+        console.log('✓ Database connected successfully');
 
-    // Import routes
-    const authRoutes = require('../server/routes/auth')(db);
-    const hostelRoutes = require('../server/routes/hostels')(db);
-    const roomRoutes = require('../server/routes/rooms')(db);
-    const bookRoutes = require('../server/routes/books')(db);
-    const courseRoutes = require('../server/routes/courses')(db);
-    const studentRoutes = require('../server/routes/students')(db);
-    const borrowingRoutes = require('../server/routes/borrowings')(db);
-    const enrollmentRoutes = require('../server/routes/enrollments')(db);
-    const requestRoutes = require('../server/routes/requests')(db);
-    const notificationRoutes = require('../server/routes/notifications')(db);
-    const announcementRoutes = require('../server/routes/announcements')(db);
-    const appointmentRoutes = require('../server/routes/appointments')(db);
-    const serviceRoutes = require('../server/routes/services')(db);
+        // Import routes
+        const authRoutes = require('../server/routes/auth')(db);
+        const hostelRoutes = require('../server/routes/hostels')(db);
+        const roomRoutes = require('../server/routes/rooms')(db);
+        const bookRoutes = require('../server/routes/books')(db);
+        const courseRoutes = require('../server/routes/courses')(db);
+        const studentRoutes = require('../server/routes/students')(db);
+        const borrowingRoutes = require('../server/routes/borrowings')(db);
+        const enrollmentRoutes = require('../server/routes/enrollments')(db);
+        const requestRoutes = require('../server/routes/requests')(db);
+        const notificationRoutes = require('../server/routes/notifications')(db);
+        const announcementRoutes = require('../server/routes/announcements')(db);
+        const appointmentRoutes = require('../server/routes/appointments')(db);
+        const serviceRoutes = require('../server/routes/services')(db);
 
-    // API routes
-    app.use('/api/auth', authRoutes);
-    app.use('/api/hostels', hostelRoutes);
-    app.use('/api/rooms', roomRoutes);
-    app.use('/api/books', bookRoutes);
-    app.use('/api/courses', courseRoutes);
-    app.use('/api/students', studentRoutes);
-    app.use('/api/borrowings', borrowingRoutes);
-    app.use('/api/enrollments', enrollmentRoutes);
-    app.use('/api/requests', requestRoutes);
-    app.use('/api/notifications', notificationRoutes);
-    app.use('/api/announcements', announcementRoutes);
-    app.use('/api/appointments', appointmentRoutes);
-    app.use('/api/services', serviceRoutes);
+        // API routes
+        app.use('/api/auth', authRoutes);
+        app.use('/api/hostels', hostelRoutes);
+        app.use('/api/rooms', roomRoutes);
+        app.use('/api/books', bookRoutes);
+        app.use('/api/courses', courseRoutes);
+        app.use('/api/students', studentRoutes);
+        app.use('/api/borrowings', borrowingRoutes);
+        app.use('/api/enrollments', enrollmentRoutes);
+        app.use('/api/requests', requestRoutes);
+        app.use('/api/notifications', notificationRoutes);
+        app.use('/api/announcements', announcementRoutes);
+        app.use('/api/appointments', appointmentRoutes);
+        app.use('/api/services', serviceRoutes);
 
-    // Health check
-    app.get('/api/health', (req, res) => {
-        res.json({ status: 'ok', message: 'Server is running' });
-    });
+        // Health check
+        app.get('/api/health', (req, res) => {
+            res.json({ status: 'ok', message: 'Server is running with database connection' });
+        });
 
-    // Database test endpoint
-    app.get('/api/test-db', async (req, res) => {
-        try {
-            const [tables] = await db.query('SHOW TABLES');
-            res.json({
-                status: 'ok',
-                database: process.env.DB_NAME,
-                tables: tables.map(t => Object.values(t)[0])
-            });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
+        // Database test endpoint
+        app.get('/api/test-db', async (req, res) => {
+            try {
+                const [tables] = await db.query('SHOW TABLES');
+                res.json({
+                    status: 'ok',
+                    database: process.env.DB_NAME,
+                    tables: tables.map(t => Object.values(t)[0])
+                });
+            } catch (error) {
+                console.error('Database test error:', error);
+                res.status(500).json({ error: error.message });
+            }
+        });
 
-    return app;
+        // Error handling middleware
+        app.use((err, req, res, next) => {
+            console.error('API Error:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        });
+
+        return app;
+    } catch (error) {
+        console.error('Failed to initialize routes:', error);
+        throw error;
+    }
 }
 
 // Serverless handler
