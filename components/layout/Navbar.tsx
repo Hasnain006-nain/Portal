@@ -29,11 +29,11 @@ const NavLink = ({ icon, label, active, onClick }: NavLinkProps) => {
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm transition-colors ${active
-        ? 'bg-primary text-primary-foreground'
-        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+      whileHover={{ scale: 1.02, y: -1 }}
+      whileTap={{ scale: 0.98 }}
+      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${active
+        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
+        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm'
         }`}
     >
       {icon}
@@ -274,78 +274,109 @@ export function Navbar({ onLogout, onLogoClick, activeTab = 'dashboard', onTabCh
       >
         {/* Admin Request Notifications */}
         {isAdmin && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative h-8 w-8 sm:h-10 sm:w-10"
-            onClick={() => {
-              onTabChange?.('requests');
-              // Clear the badge immediately when opening requests page
-              setRequestCount(0);
-              // Refresh count after page loads to get accurate count
-              setTimeout(() => {
-                window.dispatchEvent(new Event('requestsUpdated'));
-              }, 1000);
-            }}
-          >
-            <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
-            {requestCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs bg-red-500 hover:bg-red-500">
-                {requestCount}
-              </Badge>
-            )}
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-8 w-8 sm:h-10 sm:w-10 hover:bg-accent hover:shadow-md transition-all duration-200"
+              onClick={() => {
+                onTabChange?.('requests');
+                // Clear the badge immediately when opening requests page
+                setRequestCount(0);
+                // Refresh count after page loads to get accurate count
+                setTimeout(() => {
+                  window.dispatchEvent(new Event('requestsUpdated'));
+                }, 1000);
+              }}
+            >
+              <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
+              {requestCount > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1"
+                >
+                  <Badge className="h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs bg-red-500 hover:bg-red-500 shadow-md">
+                    {requestCount}
+                  </Badge>
+                </motion.div>
+              )}
+            </Button>
+          </motion.div>
         )}
 
         {/* User Notifications */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-8 w-8 sm:h-10 sm:w-10"
-          onClick={() => {
-            onTabChange?.('notifications');
-            // Trigger notification refresh
-            setTimeout(() => {
-              window.dispatchEvent(new Event('notificationsUpdated'));
-            }, 500);
-          }}
-        >
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-          {unreadNotifications > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs bg-red-500 hover:bg-red-500">
-              {unreadNotifications}
-            </Badge>
-          )}
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-8 w-8 sm:h-10 sm:w-10 hover:bg-accent hover:shadow-md transition-all duration-200"
+            onClick={() => {
+              onTabChange?.('notifications');
+              // Trigger notification refresh
+              setTimeout(() => {
+                window.dispatchEvent(new Event('notificationsUpdated'));
+              }, 500);
+            }}
+          >
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+            {unreadNotifications > 0 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1"
+              >
+                <Badge className="h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs bg-red-500 hover:bg-red-500 shadow-md">
+                  {unreadNotifications}
+                </Badge>
+              </motion.div>
+            )}
+          </Button>
+        </motion.div>
 
         {/* Announcements Notifications */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-8 w-8 sm:h-10 sm:w-10"
-          onClick={() => {
-            onTabChange?.('announcements');
-            // Mark all announcements as read when opening the page
-            setTimeout(() => {
-              const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
-              const readIds = announcements.map((a: any) => a._id || a.id);
-              localStorage.setItem('readAnnouncements', JSON.stringify(readIds));
-              window.dispatchEvent(new Event('announcementsUpdated'));
-            }, 500);
-          }}
-        >
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-          {notificationCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs">
-              {notificationCount}
-            </Badge>
-          )}
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-8 w-8 sm:h-10 sm:w-10 hover:bg-accent hover:shadow-md transition-all duration-200"
+            onClick={() => {
+              onTabChange?.('announcements');
+              // Mark all announcements as read when opening the page
+              setTimeout(() => {
+                const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
+                const readIds = announcements.map((a: any) => a._id || a.id);
+                localStorage.setItem('readAnnouncements', JSON.stringify(readIds));
+                window.dispatchEvent(new Event('announcementsUpdated'));
+              }, 500);
+            }}
+          >
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+            {notificationCount > 0 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1"
+              >
+                <Badge className="h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs bg-primary hover:bg-primary shadow-md">
+                  {notificationCount}
+                </Badge>
+              </motion.div>
+            )}
+          </Button>
+        </motion.div>
 
         {/* Theme Toggle */}
-        <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8 sm:h-10 sm:w-10">
-          {theme === 'light' ? <Moon className="h-4 w-4 sm:h-5 sm:w-5" /> : <Sun className="h-4 w-4 sm:h-5 sm:w-5" />}
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleTheme} 
+            className="h-8 w-8 sm:h-10 sm:w-10 hover:bg-accent hover:shadow-md transition-all duration-200"
+          >
+            {theme === 'light' ? <Moon className="h-4 w-4 sm:h-5 sm:w-5" /> : <Sun className="h-4 w-4 sm:h-5 sm:w-5" />}
+          </Button>
+        </motion.div>
 
         {/* User Profile */}
         {currentUser && (
@@ -365,9 +396,16 @@ export function Navbar({ onLogout, onLogoClick, activeTab = 'dashboard', onTabCh
         )}
 
         {/* Logout */}
-        <Button variant="ghost" size="icon" onClick={onLogout} className="h-8 w-8 sm:h-10 sm:w-10">
-          <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onLogout} 
+            className="h-8 w-8 sm:h-10 sm:w-10 hover:bg-destructive/10 hover:text-destructive hover:shadow-md transition-all duration-200"
+          >
+            <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
+        </motion.div>
       </motion.div>
     </motion.nav>
   );

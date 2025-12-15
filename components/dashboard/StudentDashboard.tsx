@@ -151,14 +151,20 @@ export function StudentDashboard({ onTabChange }: StudentDashboardProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          whileHover={{ y: -4, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
-          <Card className="p-4 sm:p-5 cursor-pointer hover:shadow-lg transition-shadow w-full" onClick={() => onTabChange('library')}>
+          <Card className="p-4 sm:p-5 cursor-pointer hover:shadow-xl hover:border-blue-500/30 transition-all duration-300 w-full bg-gradient-to-br from-blue-500/5 to-blue-500/10" onClick={() => onTabChange('library')}>
             <div className="flex items-center gap-3 min-w-0">
-              <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+              <motion.div 
+                className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0"
+                whileHover={{ rotate: 10, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <BookOpen className="h-6 w-6 text-blue-500" />
-              </div>
+              </motion.div>
               <div className="min-w-0">
-                <p className="text-muted-foreground text-xs sm:text-sm mb-0.5">Books</p>
+                <p className="text-muted-foreground text-xs sm:text-sm mb-0.5">Available Books</p>
                 <h3 className="text-base sm:text-lg font-semibold">{totalBooks}</h3>
               </div>
             </div>
@@ -169,14 +175,20 @@ export function StudentDashboard({ onTabChange }: StudentDashboardProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          whileHover={{ y: -4, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
-          <Card className="p-4 sm:p-5 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onTabChange('courses')}>
+          <Card className="p-4 sm:p-5 cursor-pointer hover:shadow-xl hover:border-green-500/30 transition-all duration-300 bg-gradient-to-br from-green-500/5 to-green-500/10" onClick={() => onTabChange('courses')}>
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+              <motion.div 
+                className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center shrink-0"
+                whileHover={{ rotate: 10, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <GraduationCap className="h-6 w-6 text-green-500" />
-              </div>
+              </motion.div>
               <div className="min-w-0">
-                <p className="text-muted-foreground text-xs sm:text-sm mb-0.5">Courses</p>
+                <p className="text-muted-foreground text-xs sm:text-sm mb-0.5">Total Courses</p>
                 <h3 className="text-base sm:text-lg font-semibold">{totalCourses}</h3>
               </div>
             </div>
@@ -186,10 +198,15 @@ export function StudentDashboard({ onTabChange }: StudentDashboardProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Hostel Information */}
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-base sm:text-lg">Hostel Information</h3>
-          </div>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="p-4 sm:p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-l-purple-500">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold">Hostel Information</h3>
+            </div>
           {studentData?.hostelBuilding && hostelData ? (
             <div className="space-y-2 sm:space-y-3">
               <div className="flex items-center justify-between">
@@ -242,16 +259,24 @@ export function StudentDashboard({ onTabChange }: StudentDashboardProps) {
               </p>
             </div>
           )}
-        </Card>
+          </Card>
+        </motion.div>
 
         {/* Borrowed Books */}
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-base sm:text-lg">Borrowed Books</h3>
-            <Button variant="ghost" size="sm" onClick={() => onTabChange('library')} className="text-xs sm:text-sm">
-              View All
-            </Button>
-          </div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="p-4 sm:p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold">Borrowed Books</h3>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="ghost" size="sm" onClick={() => onTabChange('library')} className="text-xs sm:text-sm hover:bg-blue-500/10 hover:text-blue-600 transition-colors">
+                  View All
+                </Button>
+              </motion.div>
+            </div>
           {borrowedBooks.length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
               {borrowedBooks.map((request) => (
@@ -275,17 +300,25 @@ export function StudentDashboard({ onTabChange }: StudentDashboardProps) {
           ) : (
             <p className="text-muted-foreground text-sm">No books currently borrowed</p>
           )}
-        </Card>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Enrolled Courses */}
-      <Card className="p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h3 className="text-base sm:text-lg">Enrolled Courses</h3>
-          <Button variant="ghost" size="sm" onClick={() => onTabChange('courses')} className="text-xs sm:text-sm">
-            View All
-          </Button>
-        </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <Card className="p-4 sm:p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="text-base sm:text-lg font-semibold">Enrolled Courses</h3>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="ghost" size="sm" onClick={() => onTabChange('courses')} className="text-xs sm:text-sm hover:bg-green-500/10 hover:text-green-600 transition-colors">
+                View All
+              </Button>
+            </motion.div>
+          </div>
         {enrolledCourses.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {enrolledCourses.map((enrollment) => (
@@ -301,7 +334,8 @@ export function StudentDashboard({ onTabChange }: StudentDashboardProps) {
         ) : (
           <p className="text-muted-foreground text-sm">No courses enrolled</p>
         )}
-      </Card>
+        </Card>
+      </motion.div>
     </div>
   );
 }
