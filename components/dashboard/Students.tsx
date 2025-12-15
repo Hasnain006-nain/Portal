@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
@@ -7,7 +7,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { studentsApi } from '../../lib/apiClient';
-import { Users, Plus, Edit, Trash2, Loader2, User, ArrowLeft, X, Mail, BookOpen, Search, Filter, Phone, GraduationCap } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, Loader2, User, ArrowLeft, X, Mail, BookOpen, Search, Filter, Phone, GraduationCap, Eye, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -557,7 +557,7 @@ export function Students({ onTabChange }: StudentsProps = {}) {
       </Card>
 
       {/* Students Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <AnimatePresence>
           {filteredStudents.map((student) => (
             <motion.div
@@ -565,27 +565,49 @@ export function Students({ onTabChange }: StudentsProps = {}) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
             >
-              <Card className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-primary/20">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        {student.student_id}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Year {student.year}
-                      </Badge>
+              <Card className="group relative overflow-hidden border-2 hover:border-primary/30 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card/50 to-card backdrop-blur-sm">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Badge variant="outline" className="text-xs font-medium bg-primary/5 border-primary/20 text-primary">
+                          {student.student_id}
+                        </Badge>
+                        <Badge variant="info" className="text-xs">
+                          Year {student.year}
+                        </Badge>
+                        <Badge 
+                          variant={student.status === 'active' ? 'success' : 'secondary'} 
+                          className="text-xs capitalize"
+                        >
+                          {student.status}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-lg mb-2 group-hover:text-primary transition-colors">
+                        {student.name}
+                      </CardTitle>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Mail className="h-3 w-3" />
+                          <span className="truncate">{student.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <GraduationCap className="h-3 w-3" />
+                          <span className="truncate">{student.department}</span>
+                        </div>
+                        {student.phone && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            <span className="truncate">{student.phone}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <h3 className="font-semibold text-lg mb-1">{student.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">{student.email}</p>
-                    <p className="text-sm font-medium text-primary">{student.department}</p>
-                  </div>
-                  <div className="flex flex-col gap-1">
                     {isAdmin && (
-                      <>
+                      <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -593,9 +615,9 @@ export function Students({ onTabChange }: StudentsProps = {}) {
                             e.stopPropagation();
                             handleEdit(student);
                           }}
-                          className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground"
+                          className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-3 w-3" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -604,21 +626,30 @@ export function Students({ onTabChange }: StudentsProps = {}) {
                             e.stopPropagation();
                             handleDelete(student);
                           }}
-                          className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                          className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground hover:scale-110 transition-all"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
-                </div>
-                <Button
-                  variant="outline"
-                  className="w-full hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={() => setSelectedStudent(student)}
-                >
-                  View Details
-                </Button>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-105"
+                      onClick={() => setSelectedStudent(student)}
+                    >
+                      <Eye className="h-3 w-3 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
+                </CardContent>
+                
+                {/* Decorative gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </Card>
             </motion.div>
           ))}

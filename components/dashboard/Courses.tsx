@@ -4,299 +4,92 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { coursesApi, enrollmentsApi, studentsApi } from '../../lib/apiClient';
-import { Users, Plus, Edit, Trash2, Loader2, GraduationCap, ArrowLeft, X, UserPlus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { coursesApi } from '../../lib/apiClient';
+import { Users, Plus, Edit, Trash2, Loader2, GraduationCap, ArrowLeft, X, Search, Filter, BookOpen, Clock, User } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
-import { ExportButton } from '../ui/export-button';
-import { exportCourses } from '../../lib/exportUtils';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface CoursesProps {
   onTabChange?: (tab: string) => void;
 }
 
+interface Course {
+  id: string;
+  course_code: string;
+  name: string;
+  description?: string;
+  credits: number;
+  department: string;
+  instructor: string;
+  semester?: string;
+  created_at: string;
+}
+
+interface FormData {
+  course_code: string;
+  name: string;
+  description: string;
+  credits: string;
+  department: string;
+  instructor: string;
+  semester: string;
+}
+
+const departments = [
+  'Computer Science',
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'Economics',
+  'Business Administration',
+  'Literature',
+  'Psychology',
+  'Engineering'
+];
+
+const semesters = [
+  'Fall 2024',
+  'Spring 2025',
+  'Summer 2025',
+  'Fall 2025'
+];
+
 export function Courses({ onTabChange }: CoursesProps = {}) {
-  const [courses, setCourses] = useState<any[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<any>(null);
-  const [enrolledStudents, setEnrolledStudents] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<any>(null);
-  const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
-  const [allStudents, setAllStudents] = useState<any[]>([]);
-  const [enrollmentMode, setEnrollmentMode] = useState<'select' | 'manual'>('select');
-  const [editingEnrollment, setEditingEnrollment] = useState<any>(null);
-  const [isEditEnrollmentDialogOpen, setIsEditEnrollmentDialogOpen] = useState(false);
-  const [viewingStudent, setViewingStudent] = useState<any>(null);
-  const [isViewStudentDialogOpen, setIsViewStudentDialogOpen] = useState(false);
-  const [studentAllEnrollments, setStudentAllEnrollments] = useState<any[]>([]);
-  const [enrollFormData, setEnrollFormData] = useState({
-    studentId: '',
-    studentName: '',
-    studentEmail: '',
-    manualStudentId: '',
-    manualStudentName: '',
-    manualStudentEmail: '',
-    newCourseCode: ''
-  });
-  const [formData, setFormData] = useState({
-    code: '',
-    name: '',
-    credits: '',
-    instructor: '',
-    semester: '',
-    enrolled: '',
-    capacity: '',
-    category: '',
-    courseType: ''
-  });
-
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDepartment, setFilterDepartment] = useState('');
+  const [filterSemester, setFilterSemester] = useState('');
 
-  const facultyCategories = [
-    { id: 'science', name: 'Science', color: 'bg-blue-500' },
-    { id: 'economics', name: 'Economics', color: 'bg-green-500' },
-    { id: 'business', name: 'Business', color: 'bg-purple-500' },
-    { id: 'multimedia', name: 'Multimedia', color: 'bg-orange-500' },
-    { id: 'literature', name: 'Literature', color: 'bg-pink-500' },
-    { id: 'acting', name: 'Acting & Theatre', color: 'bg-red-500' }
-  ];
+  const [formData, setFormData] = useState<FormData>({
+    course_code: '',
+    name: '',
+    description: '',
+    credits: '3',
+    department: '',
+    instructor: '',
+    semester: ''
+  });
 
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
   const isAdmin = currentUser.role === 'admin';
 
-  const handleViewCourse = async (course: any) => {
-    try {
-      setSelectedCourse(course);
-      await fetchEnrolledStudents(course.code);
-    } catch (error: any) {
-      toast.error('Failed to load course details');
-    }
-  };
-
-  const fetchEnrolledStudents = async (courseCode: string) => {
-    try {
-      const enrollments = await enrollmentsApi.getByCourseCode(courseCode);
-      console.log('Fetched enrollments for', courseCode, ':', enrollments);
-      setEnrolledStudents(enrollments || []);
-    } catch (error: any) {
-      console.error('Failed to load enrolled students:', error);
-      setEnrolledStudents([]);
-    }
-  };
-
-  const handleEnrollStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      let enrollmentData;
-
-      if (enrollmentMode === 'select') {
-        const selectedStudent = allStudents.find(s => s.studentId === enrollFormData.studentId);
-        if (!selectedStudent) {
-          toast.error('Please select a student');
-          return;
-        }
-        enrollmentData = {
-          studentId: selectedStudent.studentId,
-          studentName: selectedStudent.name,
-          studentEmail: selectedStudent.email,
-          courseCode: selectedCourse.code,
-          courseName: selectedCourse.name,
-          enrolledAt: new Date().toISOString()
-        };
-      } else {
-        enrollmentData = {
-          studentId: enrollFormData.manualStudentId,
-          studentName: enrollFormData.manualStudentName,
-          studentEmail: enrollFormData.manualStudentEmail,
-          courseCode: selectedCourse.code,
-          courseName: selectedCourse.name,
-          enrolledAt: new Date().toISOString()
-        };
-      }
-
-      const result = await enrollmentsApi.create(enrollmentData);
-      console.log('Enrollment created:', result);
-      toast.success('Student enrolled successfully!');
-      setIsEnrollDialogOpen(false);
-      resetEnrollForm();
-
-      // Force refresh with a small delay to ensure backend is updated
-      setTimeout(async () => {
-        await fetchEnrolledStudents(selectedCourse.code);
-        await fetchCourses();
-
-        // Update selected course
-        const updatedCourses = await coursesApi.getAll();
-        const updatedCourse = updatedCourses.find(c => c.code === selectedCourse.code);
-        if (updatedCourse) {
-          setSelectedCourse(updatedCourse);
-        }
-      }, 300);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to enroll student');
-    }
-  };
-
-
-
-  const handleViewStudent = async (enrollment: any) => {
-    try {
-      setViewingStudent(enrollment);
-      // Fetch all enrollments for this student
-      const allEnrollments = await enrollmentsApi.getByStudentId(enrollment.studentId);
-      setStudentAllEnrollments(allEnrollments);
-      setIsViewStudentDialogOpen(true);
-    } catch (error: any) {
-      toast.error('Failed to load student details');
-    }
-  };
-
-  const handleEditEnrollment = (enrollment: any) => {
-    setEditingEnrollment(enrollment);
-    setEnrollFormData({
-      studentId: enrollment.studentId,
-      studentName: enrollment.studentName,
-      studentEmail: enrollment.studentEmail,
-      manualStudentId: enrollment.studentId,
-      manualStudentName: enrollment.studentName,
-      manualStudentEmail: enrollment.studentEmail,
-      newCourseCode: enrollment.courseCode
-    });
-    setIsEditEnrollmentDialogOpen(true);
-  };
-
-  const handleUpdateEnrollment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const courseChanged = enrollFormData.newCourseCode !== editingEnrollment.courseCode;
-
-      if (courseChanged) {
-        // Course transfer: delete old enrollment and create new one
-        const newCourse = courses.find(c => c.code === enrollFormData.newCourseCode);
-        if (!newCourse) {
-          toast.error('Selected course not found');
-          return;
-        }
-
-        // Create transfer history entry
-        const transferHistory = editingEnrollment.transferHistory || [];
-        transferHistory.push({
-          fromCourse: editingEnrollment.courseCode,
-          fromCourseName: editingEnrollment.courseName,
-          toCourse: newCourse.code,
-          toCourseName: newCourse.name,
-          transferredAt: new Date().toISOString()
-        });
-
-        // Create new enrollment with original date and transfer history
-        const newEnrollmentData = {
-          studentId: enrollFormData.manualStudentId,
-          studentName: enrollFormData.manualStudentName,
-          studentEmail: enrollFormData.manualStudentEmail,
-          courseCode: newCourse.code,
-          courseName: newCourse.name,
-          enrolledAt: editingEnrollment.enrolledAt, // Keep original enrollment date
-          transferHistory: transferHistory
-        };
-
-        await enrollmentsApi.create(newEnrollmentData);
-        await enrollmentsApi.delete(editingEnrollment._id);
-
-        toast.success(`Student transferred to ${newCourse.name} successfully!`);
-      } else {
-        // Just update student info
-        const updatedData = {
-          studentName: enrollFormData.manualStudentName,
-          studentEmail: enrollFormData.manualStudentEmail
-        };
-        await enrollmentsApi.update(editingEnrollment._id, updatedData);
-        toast.success('Student information updated successfully!');
-      }
-
-      setIsEditEnrollmentDialogOpen(false);
-      setEditingEnrollment(null);
-      resetEnrollForm();
-
-      setTimeout(async () => {
-        await fetchEnrolledStudents(selectedCourse.code);
-        await fetchCourses();
-      }, 300);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update student');
-    }
-  };
-
-  const handleDeleteEnrollment = async (enrollmentId: string) => {
-    if (!confirm('Are you sure you want to remove this student from the course?')) return;
-
-    try {
-      await enrollmentsApi.delete(enrollmentId);
-      toast.success('Student removed from course successfully!');
-
-      setTimeout(async () => {
-        await fetchEnrolledStudents(selectedCourse.code);
-        await fetchCourses();
-
-        const updatedCourses = await coursesApi.getAll();
-        const updatedCourse = updatedCourses.find(c => c.code === selectedCourse.code);
-        if (updatedCourse) {
-          setSelectedCourse(updatedCourse);
-        }
-      }, 300);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to remove student');
-    }
-  };
-
-  const resetEnrollForm = () => {
-    setEnrollFormData({
-      studentId: '',
-      studentName: '',
-      studentEmail: '',
-      manualStudentId: '',
-      manualStudentName: '',
-      manualStudentEmail: '',
-      newCourseCode: ''
-    });
-    setEnrollmentMode('select');
-  };
-
-  const handleStudentSelect = (studentId: string) => {
-    const student = allStudents.find(s => s.studentId === studentId);
-    if (student) {
-      setEnrollFormData({
-        ...enrollFormData,
-        studentId: student.studentId,
-        studentName: student.name,
-        studentEmail: student.email
-      });
-    }
-  };
-
   useEffect(() => {
     fetchCourses();
-    if (isAdmin) {
-      fetchStudents();
-    }
   }, []);
 
-  const fetchStudents = async () => {
-    try {
-      const data = await studentsApi.getAll();
-      setAllStudents(data);
-    } catch (error: any) {
-      console.error('Failed to load students');
-    }
-  };
+  useEffect(() => {
+    filterCourses();
+  }, [courses, searchTerm, filterDepartment, filterSemester]);
 
   const fetchCourses = async () => {
     try {
@@ -305,32 +98,52 @@ export function Courses({ onTabChange }: CoursesProps = {}) {
       setCourses(data);
     } catch (error: any) {
       toast.error('Failed to load courses');
+      console.error('Error fetching courses:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const filterCourses = () => {
+    let filtered = courses;
+
+    if (searchTerm) {
+      filtered = filtered.filter(course =>
+        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.course_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterDepartment) {
+      filtered = filtered.filter(course => course.department === filterDepartment);
+    }
+
+    if (filterSemester) {
+      filtered = filtered.filter(course => course.semester === filterSemester);
+    }
+
+    setFilteredCourses(filtered);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (isSubmitting) return; // Prevent duplicate submissions
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
       const courseData = {
-        code: formData.code,
+        course_code: formData.course_code,
         name: formData.name,
+        description: formData.description,
         credits: parseInt(formData.credits),
+        department: formData.department,
         instructor: formData.instructor,
-        semester: formData.semester,
-        enrolled: editingCourse ? parseInt(formData.enrolled) : 0,
-        capacity: parseInt(formData.capacity),
-        category: formData.category,
-        courseType: formData.courseType
+        semester: formData.semester
       };
 
       if (editingCourse) {
-        await coursesApi.update(editingCourse._id, courseData);
+        await coursesApi.update(editingCourse.id, courseData);
         toast.success('Course updated successfully!');
       } else {
         await coursesApi.create(courseData);
@@ -347,1035 +160,491 @@ export function Courses({ onTabChange }: CoursesProps = {}) {
     }
   };
 
-  const handleEdit = (course: any) => {
+  const handleEdit = (course: Course) => {
     setEditingCourse(course);
     setFormData({
-      code: course.code,
-      name: course.name || '',
-      credits: (course.credits || 0).toString(),
-      instructor: course.instructor || '',
-      semester: course.semester || '',
-      enrolled: (course.enrolled || 0).toString(),
-      capacity: (course.capacity || 30).toString(),
-      category: course.category || '',
-      courseType: course.courseType || 'major'
+      course_code: course.course_code,
+      name: course.name,
+      description: course.description || '',
+      credits: course.credits.toString(),
+      department: course.department,
+      instructor: course.instructor,
+      semester: course.semester || ''
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this course?')) return;
-
-    if (isSubmitting) return; // Prevent duplicate operations
-
-    setIsSubmitting(true);
+  const handleDelete = async (course: Course) => {
+    if (!confirm(`Are you sure you want to delete "${course.name}"?`)) return;
 
     try {
-      await coursesApi.delete(id);
+      await coursesApi.delete(course.id);
       toast.success('Course deleted successfully!');
       fetchCourses();
     } catch (error: any) {
       toast.error(error.message || 'Delete failed');
-    } finally {
-      setIsSubmitting(false);
     }
+  };
+
+  const handleView = (course: Course) => {
+    setSelectedCourse(course);
+    setIsViewDialogOpen(true);
   };
 
   const resetForm = () => {
     setFormData({
-      code: '',
+      course_code: '',
       name: '',
-      credits: '',
+      description: '',
+      credits: '3',
+      department: '',
       instructor: '',
-      semester: '',
-      enrolled: '',
-      capacity: '',
-      category: '',
-      courseType: ''
+      semester: ''
     });
     setEditingCourse(null);
   };
 
-  const filteredCourses = selectedCategory === 'all'
-    ? courses
-    : courses.filter(course => course.category === selectedCategory);
-
-  const getCategoryColor = (categoryId: string) => {
-    const category = facultyCategories.find(c => c.id === categoryId);
-    return category?.color || 'bg-gray-500';
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterDepartment('');
+    setFilterSemester('');
   };
 
-  const getCategoryName = (categoryId: string) => {
-    const category = facultyCategories.find(c => c.id === categoryId);
-    return category?.name || categoryId;
+  const getDepartmentColor = (department: string) => {
+    const colors = {
+      'Computer Science': 'bg-blue-500/10 text-blue-700 border-blue-200 dark:text-blue-300 dark:border-blue-800',
+      'Mathematics': 'bg-green-500/10 text-green-700 border-green-200 dark:text-green-300 dark:border-green-800',
+      'Physics': 'bg-purple-500/10 text-purple-700 border-purple-200 dark:text-purple-300 dark:border-purple-800',
+      'Chemistry': 'bg-orange-500/10 text-orange-700 border-orange-200 dark:text-orange-300 dark:border-orange-800',
+      'Biology': 'bg-emerald-500/10 text-emerald-700 border-emerald-200 dark:text-emerald-300 dark:border-emerald-800',
+      'Economics': 'bg-yellow-500/10 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-800',
+      'Business Administration': 'bg-red-500/10 text-red-700 border-red-200 dark:text-red-300 dark:border-red-800',
+      'Literature': 'bg-pink-500/10 text-pink-700 border-pink-200 dark:text-pink-300 dark:border-pink-800',
+      'Psychology': 'bg-indigo-500/10 text-indigo-700 border-indigo-200 dark:text-indigo-300 dark:border-indigo-800',
+      'Engineering': 'bg-gray-500/10 text-gray-700 border-gray-200 dark:text-gray-300 dark:border-gray-800'
+    };
+    return colors[department as keyof typeof colors] || 'bg-gray-500/10 text-gray-700 border-gray-200 dark:text-gray-300 dark:border-gray-800';
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Loader2 className="h-8 w-8 text-primary" />
+        </motion.div>
       </div>
     );
   }
 
-  // Detail View
-  if (selectedCourse) {
-    const enrollmentRate = Math.round((selectedCourse.enrolled / selectedCourse.capacity) * 100);
-    const available = selectedCourse.capacity - selectedCourse.enrolled;
-
-    return (
-      <div className="space-y-6 w-full max-w-full">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => setSelectedCourse(null)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Courses
-          </Button>
-          {isAdmin && (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => handleEdit(selectedCourse)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-              <Button variant="destructive" onClick={() => handleDelete(selectedCourse._id)}>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <Card className="p-8">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <Badge variant="outline" className="text-lg px-3 py-1">{selectedCourse.code}</Badge>
-                <Badge variant="secondary" className="text-lg px-3 py-1">{selectedCourse.credits} Credits</Badge>
-                {selectedCourse.category && (
-                  <Badge className={`${getCategoryColor(selectedCourse.category)} text-white text-lg px-3 py-1`}>
-                    {getCategoryName(selectedCourse.category)}
-                  </Badge>
-                )}
-                {selectedCourse.courseType && (
-                  <Badge variant={selectedCourse.courseType === 'major' ? 'default' : 'outline'} className="text-lg px-3 py-1">
-                    {selectedCourse.courseType === 'major' ? 'Major' : 'Minor'}
-                  </Badge>
-                )}
-              </div>
-              <h1 className="mb-2">{selectedCourse.name}</h1>
-              <p className="text-muted-foreground">{selectedCourse.instructor}</p>
-            </div>
-            <Button variant="ghost" size="icon" onClick={() => setSelectedCourse(null)}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
-            <Card className="p-3 sm:p-4 bg-primary/5">
-              <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm mb-1">Semester</p>
-              <p className="font-medium text-xs sm:text-sm md:text-base">{selectedCourse.semester}</p>
-            </Card>
-            <Card className="p-3 sm:p-4 bg-blue-500/5">
-              <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm mb-1">Enrolled</p>
-              <h3 className="text-lg sm:text-xl md:text-2xl">{selectedCourse.enrolled}</h3>
-            </Card>
-            <Card className="p-3 sm:p-4 bg-green-500/5">
-              <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm mb-1">Capacity</p>
-              <h3 className="text-lg sm:text-xl md:text-2xl">{selectedCourse.capacity}</h3>
-            </Card>
-            <Card className="p-3 sm:p-4 bg-purple-500/5">
-              <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm mb-1">Available</p>
-              <Badge variant={available > 0 ? "outline" : "destructive"} className="text-xs sm:text-sm">
-                {available} seats
-              </Badge>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <h3 className="mb-4">Enrollment Rate</h3>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Current Enrollment</span>
-                  <span className="font-medium">{enrollmentRate}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-4">
-                  <div
-                    className="bg-primary rounded-full h-4 transition-all"
-                    style={{ width: `${enrollmentRate}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3>Enrolled Students ({enrolledStudents.length})</h3>
-                {isAdmin && (
-                  <Button onClick={() => { resetEnrollForm(); setIsEnrollDialogOpen(true); }}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Enroll Student
-                  </Button>
-                )}
-              </div>
-              {enrolledStudents.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-2 sm:gap-3 md:gap-3">
-                  {enrolledStudents.map((enrollment: any) => (
-                    <Card
-                      key={enrollment._id}
-                      className="p-2 sm:p-2.5 md:p-3 relative group hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 w-full cursor-pointer border-2 hover:border-primary/50"
-                      onClick={() => handleViewStudent(enrollment)}
-                    >
-                      <div className="space-y-1 text-center">
-                        <p className="font-semibold text-[11px] sm:text-xs md:text-sm truncate">{enrollment.studentName}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate font-medium">{enrollment.studentId}</p>
-                        <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground truncate">{enrollment.studentEmail}</p>
-                        <p className="text-[8px] sm:text-[9px] md:text-[10px] text-muted-foreground mt-1 pt-1 border-t">
-                          {new Date(enrollment.enrolledAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      {isAdmin && (
-                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 md:group-hover:opacity-100 transition-opacity bg-background/95 rounded-md p-0.5 shadow-sm">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 sm:h-7 sm:w-7 hover:bg-primary/10"
-                            onClick={(e) => { e.stopPropagation(); handleEditEnrollment(enrollment); }}
-                          >
-                            <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 sm:h-7 sm:w-7 text-destructive hover:bg-destructive/10"
-                            onClick={(e) => { e.stopPropagation(); handleDeleteEnrollment(enrollment._id); }}
-                          >
-                            <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                          </Button>
-                        </div>
-                      )}
-                      {/* Mobile action buttons - always visible on touch devices */}
-                      {isAdmin && (
-                        <div className="flex gap-1 mt-2 pt-2 border-t md:hidden">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 h-7 text-[10px]"
-                            onClick={(e) => { e.stopPropagation(); handleEditEnrollment(enrollment); }}
-                          >
-                            <Edit className="h-3 w-3 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 h-7 text-[10px] text-destructive hover:bg-destructive/10"
-                            onClick={(e) => { e.stopPropagation(); handleDeleteEnrollment(enrollment._id); }}
-                          >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            Remove
-                          </Button>
-                        </div>
-                      )}
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card className="p-8 text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No students enrolled yet</p>
-                  {isAdmin && (
-                    <Button className="mt-4" onClick={() => { resetEnrollForm(); setIsEnrollDialogOpen(true); }}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Enroll First Student
-                    </Button>
-                  )}
-                </Card>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* Enrollment Dialog for Detail View */}
-        <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
-          <DialogContent className="!w-[90%] sm:!w-[550px] !max-w-[600px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-            <div className="p-6 border-b">
-              <DialogHeader className="text-left">
-                <DialogTitle className="text-xl font-semibold">Enroll Student</DialogTitle>
-                <DialogDescription className="text-sm mt-1">
-                  Add a student to {selectedCourse?.name} ({selectedCourse?.code})
-                </DialogDescription>
-              </DialogHeader>
-            </div>
-
-            <div className="flex border-b">
-              <button
-                type="button"
-                onClick={() => setEnrollmentMode('select')}
-                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${enrollmentMode === 'select'
-                  ? 'border-b-2 border-primary bg-primary/5 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-              >
-                Select from List
-              </button>
-              <button
-                type="button"
-                onClick={() => setEnrollmentMode('manual')}
-                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${enrollmentMode === 'manual'
-                  ? 'border-b-2 border-primary bg-primary/5 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-              >
-                Add Manually
-              </button>
-            </div>
-
-            <form onSubmit={handleEnrollStudent} className="flex flex-col h-full">
-              <div className="p-6 overflow-y-auto flex-1 space-y-4">
-                {enrollmentMode === 'select' ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="studentSelect" className="text-sm font-medium mb-2 block">
-                        Select Student
-                      </Label>
-                      <select
-                        id="studentSelect"
-                        value={enrollFormData.studentId}
-                        onChange={(e) => handleStudentSelect(e.target.value)}
-                        className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                        required
-                      >
-                        <option value="">Choose a student...</option>
-                        {allStudents.map((student) => {
-                          const isEnrolled = enrolledStudents.some(e => e.studentId === student.studentId);
-                          return (
-                            <option key={student._id} value={student.studentId} disabled={isEnrolled}>
-                              {student.name} ({student.studentId}) {isEnrolled ? '- Already Enrolled' : ''}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                    {enrollFormData.studentId && (
-                      <Card className="p-4 bg-primary/5 border-primary/20">
-                        <h4 className="text-sm font-semibold mb-3">Selected Student</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Name:</span>
-                            <span className="font-medium">{enrollFormData.studentName}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Student ID:</span>
-                            <span className="font-medium">{enrollFormData.studentId}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Email:</span>
-                            <span className="font-medium">{enrollFormData.studentEmail}</span>
-                          </div>
-                        </div>
-                      </Card>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="manualStudentId" className="text-sm font-medium mb-2 block">
-                        Student ID
-                      </Label>
-                      <Input
-                        id="manualStudentId"
-                        value={enrollFormData.manualStudentId}
-                        onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentId: e.target.value })}
-                        placeholder="e.g., S001"
-                        className="h-11 rounded-lg"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="manualStudentName" className="text-sm font-medium mb-2 block">
-                        Student Name
-                      </Label>
-                      <Input
-                        id="manualStudentName"
-                        value={enrollFormData.manualStudentName}
-                        onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentName: e.target.value })}
-                        placeholder="e.g., John Doe"
-                        className="h-11 rounded-lg"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="manualStudentEmail" className="text-sm font-medium mb-2 block">
-                        Student Email
-                      </Label>
-                      <Input
-                        id="manualStudentEmail"
-                        type="email"
-                        value={enrollFormData.manualStudentEmail}
-                        onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentEmail: e.target.value })}
-                        placeholder="e.g., john.doe@university.edu"
-                        className="h-11 rounded-lg"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-                <Button type="button" variant="outline" onClick={() => setIsEnrollDialogOpen(false)} className="px-6">
-                  Cancel
-                </Button>
-                <Button type="submit" className="px-6">
-                  Enroll Student
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Enrollment Dialog */}
-        <Dialog open={isEditEnrollmentDialogOpen} onOpenChange={setIsEditEnrollmentDialogOpen}>
-          <DialogContent className="!w-[90%] sm:!w-[500px] !max-w-[550px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-            <div className="p-6 border-b">
-              <DialogHeader className="text-left">
-                <DialogTitle className="text-xl font-semibold">Edit Student Information</DialogTitle>
-                <DialogDescription className="text-sm mt-1">
-                  Update student details for {editingEnrollment?.studentName}
-                </DialogDescription>
-              </DialogHeader>
-            </div>
-
-            <form onSubmit={handleUpdateEnrollment} className="flex flex-col h-full">
-              <div className="p-6 overflow-y-auto flex-1 space-y-4">
-                <div>
-                  <Label htmlFor="editStudentId" className="text-sm font-medium mb-2 block">
-                    Student ID (Cannot be changed)
-                  </Label>
-                  <Input
-                    id="editStudentId"
-                    value={enrollFormData.manualStudentId}
-                    disabled
-                    className="h-11 rounded-lg bg-muted"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="editStudentName" className="text-sm font-medium mb-2 block">
-                    Student Name
-                  </Label>
-                  <Input
-                    id="editStudentName"
-                    value={enrollFormData.manualStudentName}
-                    onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentName: e.target.value })}
-                    placeholder="e.g., John Doe"
-                    className="h-11 rounded-lg"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="editStudentEmail" className="text-sm font-medium mb-2 block">
-                    Student Email
-                  </Label>
-                  <Input
-                    id="editStudentEmail"
-                    type="email"
-                    value={enrollFormData.manualStudentEmail}
-                    onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentEmail: e.target.value })}
-                    placeholder="e.g., john.doe@university.edu"
-                    className="h-11 rounded-lg"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="editCourseCode" className="text-sm font-medium mb-2 block">
-                    Enrolled Course
-                  </Label>
-                  <select
-                    id="editCourseCode"
-                    value={enrollFormData.newCourseCode}
-                    onChange={(e) => setEnrollFormData({ ...enrollFormData, newCourseCode: e.target.value })}
-                    className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                    required
-                  >
-                    {courses.map((course) => (
-                      <option key={course._id} value={course.code}>
-                        {course.code} - {course.name}
-                      </option>
-                    ))}
-                  </select>
-                  {enrollFormData.newCourseCode !== editingEnrollment?.courseCode && (
-                    <p className="text-xs text-amber-600 mt-2">
-                      ⚠️ Changing course will transfer this student. Original enrollment date will be preserved.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-                <Button type="button" variant="outline" onClick={() => setIsEditEnrollmentDialogOpen(false)} className="px-6">
-                  Cancel
-                </Button>
-                <Button type="submit" className="px-6">
-                  Update Student
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* View Student Details Dialog */}
-        <Dialog open={isViewStudentDialogOpen} onOpenChange={setIsViewStudentDialogOpen}>
-          <DialogContent className="!w-[90%] sm:!w-[600px] !max-w-[650px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-            <div className="p-6 border-b">
-              <DialogHeader className="text-left">
-                <DialogTitle className="text-xl font-semibold">Student Details</DialogTitle>
-                <DialogDescription className="text-sm mt-1">
-                  Complete information about {viewingStudent?.studentName}
-                </DialogDescription>
-              </DialogHeader>
-            </div>
-
-            <div className="p-6 overflow-y-auto space-y-6">
-              {/* Student Basic Info */}
-              <Card className="p-4 bg-primary/5 border-primary/20">
-                <h4 className="text-sm font-semibold mb-3">Basic Information</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Name:</span>
-                    <span className="font-medium">{viewingStudent?.studentName}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Student ID:</span>
-                    <span className="font-medium">{viewingStudent?.studentId}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Email:</span>
-                    <span className="font-medium">{viewingStudent?.studentEmail}</span>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Current Course Enrollment */}
-              <Card className="p-4 bg-blue-500/5 border-blue-500/20">
-                <h4 className="text-sm font-semibold mb-3">Current Course Enrollment</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Course:</span>
-                    <span className="font-medium">{viewingStudent?.courseName}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Course Code:</span>
-                    <span className="font-medium">{viewingStudent?.courseCode}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Enrolled At:</span>
-                    <span className="font-medium">
-                      {viewingStudent?.enrolledAt
-                        ? new Date(viewingStudent.enrolledAt).toLocaleString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
-                        : 'N/A'}
-                    </span>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Transfer History */}
-              {viewingStudent?.transferHistory && viewingStudent.transferHistory.length > 0 && (
-                <Card className="p-4 bg-amber-500/5 border-amber-500/20">
-                  <h4 className="text-sm font-semibold mb-3">Transfer History</h4>
-                  <div className="space-y-3">
-                    {viewingStudent.transferHistory.map((transfer: any, index: number) => (
-                      <div key={index} className="border-l-2 border-amber-500 pl-3 py-1">
-                        <p className="text-xs font-medium">
-                          Transferred from <span className="text-amber-700">{transfer.fromCourseName}</span> ({transfer.fromCourse})
-                        </p>
-                        <p className="text-xs font-medium">
-                          to <span className="text-green-700">{transfer.toCourseName}</span> ({transfer.toCourse})
-                        </p>
-                        <p className="text-[10px] text-muted-foreground mt-1">
-                          {new Date(transfer.transferredAt).toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
-
-              {/* All Enrolled Courses */}
-              <div>
-                <h4 className="text-sm font-semibold mb-3">All Enrolled Courses ({studentAllEnrollments.length})</h4>
-                {studentAllEnrollments.length > 0 ? (
-                  <div className="space-y-2">
-                    {studentAllEnrollments.map((enrollment: any, index: number) => (
-                      <Card key={enrollment._id} className="p-3 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className="text-xs">{enrollment.courseCode}</Badge>
-                              <span className="font-medium text-sm">{enrollment.courseName}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Enrolled: {new Date(enrollment.enrolledAt).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                          <Badge variant="secondary" className="text-xs">
-                            #{index + 1}
-                          </Badge>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <Card className="p-6 text-center">
-                    <p className="text-sm text-muted-foreground">No other courses found</p>
-                  </Card>
-                )}
-              </div>
-            </div>
-
-            <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-              <Button type="button" onClick={() => setIsViewStudentDialogOpen(false)} className="px-6">
-                Close
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    );
-  }
-
-  // List View
   return (
-    <div className="space-y-3 sm:space-y-4 md:space-y-6 w-full max-w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 w-full max-w-full"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl">Faculties</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-xs sm:text-sm md:text-base">View and manage course catalog</p>
+          <h1 className="text-3xl font-bold">Course Management</h1>
+          <p className="text-muted-foreground mt-1">Manage academic courses and programs</p>
         </div>
         <div className="flex items-center gap-2">
           {onTabChange && (
-            <Button variant="outline" onClick={() => onTabChange('dashboard')} className="flex-shrink-0">
+            <Button 
+              variant="outline" 
+              onClick={() => onTabChange('dashboard')}
+              className="hover:bg-accent transition-colors"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Back</span>
+              Back
             </Button>
           )}
           {isAdmin && (
-            <>
-              <ExportButton
-                onExport={exportCourses}
-                label="Export"
-                className="flex-shrink-0"
-              />
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={resetForm} className="flex-shrink-0">
-                    <Plus className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Add Course</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="!w-[90%] sm:!w-[550px] !max-w-[600px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-                  <div className="p-6 border-b">
-                    <DialogHeader className="text-left">
-                      <DialogTitle className="text-xl font-semibold">{editingCourse ? 'Edit Course' : 'Add New Course'}</DialogTitle>
-                      <DialogDescription className="text-sm mt-1">
-                        {editingCourse ? 'Update course information' : 'Create a new course entry'}
-                      </DialogDescription>
-                    </DialogHeader>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  onClick={resetForm}
+                  className="bg-primary hover:bg-primary/90 transition-colors shadow-md hover:shadow-lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Course
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingCourse ? 'Edit Course' : 'Add New Course'}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingCourse ? 'Update course information' : 'Create a new academic course'}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="course_code">Course Code *</Label>
+                    <Input
+                      id="course_code"
+                      value={formData.course_code}
+                      onChange={(e) => setFormData({ ...formData, course_code: e.target.value })}
+                      placeholder="e.g., CS101"
+                      className="mt-1"
+                      required
+                    />
                   </div>
-                  <form onSubmit={handleSubmit} className="flex flex-col h-full">
-                    <div className="p-6 overflow-y-auto flex-1 space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="code">Course Code</Label>
-                          <Input
-                            id="code"
-                            value={formData.code}
-                            onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                            placeholder="CS101"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="credits">Credits</Label>
-                          <Input
-                            id="credits"
-                            type="number"
-                            value={formData.credits}
-                            onChange={(e) => setFormData({ ...formData, credits: e.target.value })}
-                            placeholder="4"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="name">Course Name</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          placeholder="Introduction to Programming"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="category">Faculty Category</Label>
-                          <select
-                            id="category"
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            required
-                          >
-                            <option value="">Select a faculty</option>
-                            {facultyCategories.map((category) => (
-                              <option key={category.id} value={category.id}>
-                                {category.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <Label htmlFor="courseType">Course Type</Label>
-                          <select
-                            id="courseType"
-                            value={formData.courseType}
-                            onChange={(e) => setFormData({ ...formData, courseType: e.target.value })}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            required
-                          >
-                            <option value="">Select type</option>
-                            <option value="major">Major</option>
-                            <option value="minor">Minor</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="instructor">Instructor</Label>
-                          <Input
-                            id="instructor"
-                            value={formData.instructor}
-                            onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
-                            placeholder="Dr. Smith"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="semester">Semester</Label>
-                          <Input
-                            id="semester"
-                            value={formData.semester}
-                            onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                            placeholder="Fall 2024"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="capacity">Capacity</Label>
-                        <Input
-                          id="capacity"
-                          type="number"
-                          value={formData.capacity}
-                          onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                          placeholder="50"
-                          required
-                        />
-                      </div>
+
+                  <div>
+                    <Label htmlFor="name">Course Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Enter course name"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Enter course description"
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="credits">Credits *</Label>
+                      <Input
+                        id="credits"
+                        type="number"
+                        min="1"
+                        max="6"
+                        value={formData.credits}
+                        onChange={(e) => setFormData({ ...formData, credits: e.target.value })}
+                        placeholder="3"
+                        className="mt-1"
+                        required
+                      />
                     </div>
-                    <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="px-6">
-                        Cancel
-                      </Button>
-                      <Button type="submit" className="px-6">
-                        {editingCourse ? 'Update' : 'Create'}
-                      </Button>
+
+                    <div>
+                      <Label htmlFor="department">Department *</Label>
+                      <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {departments.map((dept) => (
+                            <SelectItem key={dept} value={dept}>
+                              {dept}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="instructor">Instructor *</Label>
+                    <Input
+                      id="instructor"
+                      value={formData.instructor}
+                      onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
+                      placeholder="Enter instructor name"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="semester">Semester</Label>
+                    <Select value={formData.semester} onValueChange={(value) => setFormData({ ...formData, semester: value })}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select semester" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {semesters.map((semester) => (
+                          <SelectItem key={semester} value={semester}>
+                            {semester}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setIsDialogOpen(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="flex-1"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {editingCourse ? 'Updating...' : 'Creating...'}
+                        </>
+                      ) : (
+                        editingCourse ? 'Update Course' : 'Create Course'
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </div>
 
-      {/* Faculty Category Filter */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant={selectedCategory === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setSelectedCategory('all')}
-        >
-          All Faculties
-        </Button>
-        {facultyCategories.map((category) => (
-          <Button
-            key={category.id}
-            variant={selectedCategory === category.id ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory(category.id)}
-            className={selectedCategory === category.id ? `${category.color} text-white hover:opacity-90` : ''}
-          >
-            {category.name}
-          </Button>
-        ))}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <GraduationCap className="h-8 w-8 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">Total Courses</p>
+              <p className="text-2xl font-bold">{courses.length}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 bg-blue-500/5 border-blue-500/20">
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-8 w-8 text-blue-500" />
+            <div>
+              <p className="text-sm text-muted-foreground">Departments</p>
+              <p className="text-2xl font-bold">{new Set(courses.map(c => c.department)).size}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 bg-green-500/5 border-green-500/20">
+          <div className="flex items-center gap-3">
+            <Clock className="h-8 w-8 text-green-500" />
+            <div>
+              <p className="text-sm text-muted-foreground">Total Credits</p>
+              <p className="text-2xl font-bold">{courses.reduce((sum, course) => sum + course.credits, 0)}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 bg-purple-500/5 border-purple-500/20">
+          <div className="flex items-center gap-3">
+            <User className="h-8 w-8 text-purple-500" />
+            <div>
+              <p className="text-sm text-muted-foreground">Instructors</p>
+              <p className="text-2xl font-bold">{new Set(courses.map(c => c.instructor)).size}</p>
+            </div>
+          </div>
+        </Card>
       </div>
+
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search courses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <Select value={filterDepartment} onValueChange={setFilterDepartment}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Filter by department" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Departments</SelectItem>
+              {departments.map((dept) => (
+                <SelectItem key={dept} value={dept}>
+                  {dept}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterSemester} onValueChange={setFilterSemester}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Semester" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Semesters</SelectItem>
+              {semesters.map((semester) => (
+                <SelectItem key={semester} value={semester}>
+                  {semester}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(searchTerm || filterDepartment || filterSemester) && (
+            <Button variant="outline" onClick={clearFilters}>
+              <X className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+          )}
+        </div>
+      </Card>
 
       {/* Courses Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2 w-full">
-        {filteredCourses.map((course) => {
-          const enrollmentRate = Math.round((course.enrolled / course.capacity) * 100);
-          const available = course.capacity - course.enrolled;
-
-          return (
-            <Card
-              key={course._id}
-              className="p-2 cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => handleViewCourse(course)}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AnimatePresence>
+          {filteredCourses.map((course) => (
+            <motion.div
+              key={course.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2 }}
             >
-              <div className="flex items-start justify-between mb-1.5">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-0.5 mb-1 flex-wrap">
-                    <Badge variant="outline" className="text-[8px] px-1 py-0 h-3">{course.code}</Badge>
-                    <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3">{course.credits}cr</Badge>
-                    {course.category && (
-                      <Badge className={`${getCategoryColor(course.category)} text-white text-[8px] px-1 py-0 h-3`}>
-                        {getCategoryName(course.category)}
+              <Card className="p-6 hover:shadow-lg transition-all border-2 hover:border-primary/20">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-xs">
+                        {course.course_code}
                       </Badge>
+                      <Badge className={getDepartmentColor(course.department)}>
+                        {course.department}
+                      </Badge>
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1 line-clamp-2">{course.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">by {course.instructor}</p>
+                    {course.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{course.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span>{course.credits} credits</span>
+                      {course.semester && <span>{course.semester}</span>}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 ml-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleView(course)}
+                      className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                    </Button>
+                    {isAdmin && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(course)}
+                          className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(course)}
+                          className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
                     )}
                   </div>
-                  <h3 className="mb-0.5 text-[11px] font-semibold leading-tight truncate">{course.name}</h3>
-                  <p className="text-muted-foreground text-[9px] truncate">{course.instructor}</p>
                 </div>
-                {isAdmin && (
-                  <div className="flex flex-col gap-0.5 ml-1" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-4 w-4 p-0"
-                      onClick={() => handleEdit(course)}
-                    >
-                      <Edit className="h-2.5 w-2.5" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-4 w-4 p-0"
-                      onClick={() => handleDelete(course._id)}
-                    >
-                      <Trash2 className="h-2.5 w-2.5 text-destructive" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-[9px]">Semester</span>
-                  <span className="font-medium text-[9px]">{course.semester}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-[9px]">Enrolled</span>
-                  <span className="font-medium text-[9px]">{course.enrolled}/{course.capacity}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-[9px]">Available</span>
-                  <Badge variant={available > 0 ? "outline" : "destructive"} className="text-[8px] px-1 py-0 h-3">
-                    {available}
-                  </Badge>
-                </div>
-                <div className="pt-0.5">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-muted-foreground text-[8px]">Enrollment</span>
-                    <span className="text-[8px] font-medium">{enrollmentRate}%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-1">
-                    <div
-                      className="bg-primary rounded-full h-1.5 sm:h-2 transition-all"
-                      style={{ width: `${enrollmentRate}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
+                <Button
+                  variant="outline"
+                  className="w-full hover:bg-primary hover:text-primary-foreground transition-colors"
+                  onClick={() => handleView(course)}
+                >
+                  View Details
+                </Button>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
-      {filteredCourses.length === 0 && courses.length > 0 && (
+      {filteredCourses.length === 0 && (
         <Card className="p-12 text-center">
           <GraduationCap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="mb-2">No Courses in This Faculty</h3>
+          <h3 className="text-lg font-semibold mb-2">No courses found</h3>
           <p className="text-muted-foreground mb-4">
-            Try selecting a different faculty category.
+            {searchTerm || filterDepartment || filterSemester
+              ? 'Try adjusting your search or filters'
+              : 'No courses have been added yet'}
           </p>
+          {isAdmin && !searchTerm && !filterDepartment && !filterSemester && (
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Course
+            </Button>
+          )}
         </Card>
       )}
 
-      {courses.length === 0 && (
-        <Card className="p-12 text-center">
-          <GraduationCap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="mb-2">No Courses Found</h3>
-          <p className="text-muted-foreground mb-4">
-            {isAdmin ? 'Get started by adding your first course.' : 'No courses available at the moment.'}
-          </p>
-        </Card>
-      )}
-
-      {/* Enrollment Dialog */}
-      <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
-        <DialogContent className="!w-[90%] sm:!w-[550px] !max-w-[600px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-          <div className="p-6 border-b">
-            <DialogHeader className="text-left">
-              <DialogTitle className="text-xl font-semibold">Enroll Student</DialogTitle>
-              <DialogDescription className="text-sm mt-1">
-                Add a student to {selectedCourse?.name} ({selectedCourse?.code})
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-
-          <div className="flex border-b">
-            <button
-              type="button"
-              onClick={() => setEnrollmentMode('select')}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${enrollmentMode === 'select'
-                ? 'border-b-2 border-primary bg-primary/5 text-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-            >
-              Select from List
-            </button>
-            <button
-              type="button"
-              onClick={() => setEnrollmentMode('manual')}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${enrollmentMode === 'manual'
-                ? 'border-b-2 border-primary bg-primary/5 text-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-            >
-              Add Manually
-            </button>
-          </div>
-
-          <form onSubmit={handleEnrollStudent} className="flex flex-col h-full">
-            <div className="p-6 overflow-y-auto flex-1 space-y-4">
-              {enrollmentMode === 'select' ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="studentSelect2" className="text-sm font-medium mb-2 block">
-                      Select Student
-                    </Label>
-                    <select
-                      id="studentSelect2"
-                      value={enrollFormData.studentId}
-                      onChange={(e) => handleStudentSelect(e.target.value)}
-                      className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                      required
-                    >
-                      <option value="">Choose a student...</option>
-                      {allStudents.map((student) => {
-                        const isEnrolled = enrolledStudents.some(e => e.studentId === student.studentId);
-                        return (
-                          <option key={student._id} value={student.studentId} disabled={isEnrolled}>
-                            {student.name} ({student.studentId}) {isEnrolled ? '- Already Enrolled' : ''}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-                  {enrollFormData.studentId && (
-                    <Card className="p-4 bg-primary/5 border-primary/20">
-                      <h4 className="text-sm font-semibold mb-3">Selected Student</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Name:</span>
-                          <span className="font-medium">{enrollFormData.studentName}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Student ID:</span>
-                          <span className="font-medium">{enrollFormData.studentId}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Email:</span>
-                          <span className="font-medium">{enrollFormData.studentEmail}</span>
-                        </div>
-                      </div>
-                    </Card>
-                  )}
+      {/* View Course Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          {selectedCourse && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <Badge variant="outline">{selectedCourse.course_code}</Badge>
+                  <Badge className={getDepartmentColor(selectedCourse.department)}>
+                    {selectedCourse.department}
+                  </Badge>
                 </div>
-              ) : (
-                <div className="space-y-4">
+                <DialogTitle className="text-2xl">{selectedCourse.name}</DialogTitle>
+                <DialogDescription>
+                  Instructor: {selectedCourse.instructor}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {selectedCourse.description && (
                   <div>
-                    <Label htmlFor="manualStudentId2" className="text-sm font-medium mb-2 block">
-                      Student ID
-                    </Label>
-                    <Input
-                      id="manualStudentId2"
-                      value={enrollFormData.manualStudentId}
-                      onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentId: e.target.value })}
-                      placeholder="e.g., S001"
-                      className="h-11 rounded-lg"
-                      required
-                    />
+                    <Label className="text-sm font-medium">Description</Label>
+                    <p className="text-sm text-muted-foreground mt-1">{selectedCourse.description}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Credits</Label>
+                    <p className="text-sm text-muted-foreground">{selectedCourse.credits}</p>
                   </div>
                   <div>
-                    <Label htmlFor="manualStudentName2" className="text-sm font-medium mb-2 block">
-                      Student Name
-                    </Label>
-                    <Input
-                      id="manualStudentName2"
-                      value={enrollFormData.manualStudentName}
-                      onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentName: e.target.value })}
-                      placeholder="e.g., John Doe"
-                      className="h-11 rounded-lg"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="manualStudentEmail2" className="text-sm font-medium mb-2 block">
-                      Student Email
-                    </Label>
-                    <Input
-                      id="manualStudentEmail2"
-                      type="email"
-                      value={enrollFormData.manualStudentEmail}
-                      onChange={(e) => setEnrollFormData({ ...enrollFormData, manualStudentEmail: e.target.value })}
-                      placeholder="e.g., john.doe@university.edu"
-                      className="h-11 rounded-lg"
-                      required
-                    />
+                    <Label className="text-sm font-medium">Department</Label>
+                    <p className="text-sm text-muted-foreground">{selectedCourse.department}</p>
                   </div>
                 </div>
-              )}
-            </div>
-
-            <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-              <Button type="button" variant="outline" onClick={() => setIsEnrollDialogOpen(false)} className="px-6">
-                Cancel
-              </Button>
-              <Button type="submit" className="px-6">
-                Enroll Student
-              </Button>
-            </div>
-          </form>
+                {selectedCourse.semester && (
+                  <div>
+                    <Label className="text-sm font-medium">Semester</Label>
+                    <p className="text-sm text-muted-foreground">{selectedCourse.semester}</p>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-sm font-medium">Created</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(selectedCourse.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }
