@@ -2,472 +2,379 @@ import { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { roomsApi, studentsApi, enrollmentsApi, hostelsApi } from '../../lib/apiClient';
-import { Users, AlertTriangle, Calendar, Eye, Trash2, ArrowRightLeft } from 'lucide-react';
+import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
+import { roomsApi, studentsApi, hostelsApi } from '../../lib/apiClient';
+import { Users, AlertTriangle, Calendar, Eye, Trash2, ArrowRightLeft, X, Plus, UserPlus, Home, DoorOpen } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '../ui/dialog';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface RoomDetailModalProps {
-    room: any;
-    onClose: () => void;
-    onUpdate: () => void;
+  room: any;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: () => void;
 }
 
-export function RoomDetailModal({ room, onClose, onUpdate }: RoomDetailModalProps) {
-    const [roomData, setRoomData] = useState<any>(room);
-    const [viewingResident, setViewingResident] = useState<any>(null);
-    const [isViewResidentOpen, setIsViewResidentOpen] = useState(false);
-    const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
-    const [residentToMove, setResidentToMove] = useState<any>(null);
-    const [hostels, setHostels] = useState<any[]>([]);
-    const [selectedHostel, setSelectedHostel] = useState('');
-    const [availableRooms, setAvailableRooms] = useState<any[]>([]);
-    const [selectedRoom, setSelectedRoom] = useState('');
+interface Resident {
+  id: string;
+  name: string;
+  studentId: string;
+  email: string;
+  phone?: string;
+  checkInDate?: string;
+  status: 'active' | 'checked_out';
+}
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const isAdmin = currentUser.role === 'admin';
+export function RoomDetailModal({ room, isOpen, onClose, onUpdate }: RoomDetailModalProps) {
+  const [roomData, setRoomData] = useState<any>(room);
+  const [residents, setResidents] = useState<Resident[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isAddResidentOpen, setIsAddResidentOpen] = useState(false);
+  const [availableStudents, setAvailableStudents] = useState<any[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState('');
+  const [warnings, setWarnings] = useState<any[]>([]);
 
-    useEffect(() => {
-        fetchRoomDetails();
-        fetchHostels();
-    }, [room._id]);
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const isAdmin = currentUser.role === 'admin';
 
-    const fetchRoomDetails = async () => {
-        try {
-            const data = await roomsApi.getById(room._id);
-            setRoomData(data);
-        } catch (error: any) {
-            toast.error('Failed to load room details');
-        }
-    };
+  useEffect(() => {
+    if (isOpen && room) {
+      fetchRoomDetails();
+      fetchAvailableStudents();
+    }
+  }, [isOpen, room]);
 
-    const fetchHostels = async () => {
-        try {
-            const data = await hostelsApi.getAll();
-            setHostels(data);
-        } catch (error: any) {
-            console.error('Failed to load hostels:', error);
-        }
-    };
+  const fetchRoomDetails = async () => {
+    try {
+      setLoading(true);
+      const data = await roomsApi.getById(room.id);
+      setRoomData(data);
+      setResidents(data.residents || []);
+      setWarnings(data.warnings || []);
+    } catch (error: any) {
+      toast.error('Failed to load room details');
+      console.error('Error fetching room details:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleDeleteResident = async (resident: any) => {
-        if (!confirm(`Are you sure you want to remove ${resident.name} from this room?`)) return;
+  const fetchAvailableStudents = async () => {
+    try {
+      const students = await studentsApi.getAll();
+      // Filter students who are not already assigned to any room
+      const unassigned = students.filter((student: any) => !student.room_id);
+      setAvailableStudents(unassigned);
+    } catch (error: any) {
+      console.error('Failed to fetch students:', error);
+      setAvailableStudents([]);
+    }
+  };
 
-        try {
-            await roomsApi.removeResident(roomData._id, resident._id);
-            toast.success('Resident removed successfully!');
-            fetchRoomDetails();
-            onUpdate();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to remove resident');
-        }
-    };
+  const handleAddResident = async () => {
+    if (!selectedStudent) {
+      toast.error('Please select a student');
+      return;
+    }
 
-    const handleMoveResident = (resident: any) => {
-        setResidentToMove(resident);
-        setSelectedHostel('');
-        setSelectedRoom('');
-        setAvailableRooms([]);
-        setIsMoveDialogOpen(true);
-    };
+    try {
+      const student = availableStudents.find(s => s.id === selectedStudent);
+      if (!student) {
+        toast.error('Student not found');
+        return;
+      }
 
-    const handleHostelChange = async (hostelId: string) => {
-        setSelectedHostel(hostelId);
-        setSelectedRoom('');
+      const residentData = {
+        name: student.name,
+        studentId: student.student_id,
+        email: student.email,
+        phone: student.phone,
+        checkInDate: new Date().toISOString().split('T')[0],
+        status: 'active'
+      };
 
-        if (hostelId) {
-            try {
-                const rooms = await roomsApi.getByHostelId(hostelId);
-                // Filter out current room and full rooms
-                const available = rooms.filter((r: any) => {
-                    const residents = r.residents || [];
-                    return r._id !== roomData._id && residents.length < r.capacity;
-                });
-                setAvailableRooms(available);
-            } catch (error) {
-                console.error('Failed to fetch rooms:', error);
-                setAvailableRooms([]);
-            }
-        } else {
-            setAvailableRooms([]);
-        }
-    };
+      await roomsApi.addResident(roomData.id, residentData);
+      toast.success('Resident added successfully!');
+      setIsAddResidentOpen(false);
+      setSelectedStudent('');
+      fetchRoomDetails();
+      onUpdate();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add resident');
+    }
+  };
 
-    const confirmMoveResident = async () => {
-        if (!residentToMove || !selectedRoom) {
-            toast.error('Please select a room');
-            return;
-        }
+  const handleRemoveResident = async (resident: Resident) => {
+    if (!confirm(`Are you sure you want to remove ${resident.name} from this room?`)) return;
 
-        try {
-            // Remove from current room
-            await roomsApi.removeResident(roomData._id, residentToMove._id);
+    try {
+      await roomsApi.removeResident(roomData.id, resident.id);
+      toast.success('Resident removed successfully!');
+      fetchRoomDetails();
+      onUpdate();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to remove resident');
+    }
+  };
 
-            // Add to new room
-            const residentData = {
-                name: residentToMove.name,
-                studentId: residentToMove.studentId,
-                email: residentToMove.email,
-                phone: residentToMove.phone
-            };
-            await roomsApi.addResident(selectedRoom, residentData);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'available':
+        return 'bg-green-500/10 text-green-700 border-green-200 dark:text-green-300 dark:border-green-800';
+      case 'occupied':
+        return 'bg-blue-500/10 text-blue-700 border-blue-200 dark:text-blue-300 dark:border-blue-800';
+      case 'maintenance':
+        return 'bg-yellow-500/10 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-800';
+      default:
+        return 'bg-gray-500/10 text-gray-700 border-gray-200 dark:text-gray-300 dark:border-gray-800';
+    }
+  };
 
-            const targetRoom = availableRooms.find(r => r._id === selectedRoom);
-            toast.success(`${residentToMove.name} moved to Room ${targetRoom?.roomNumber} successfully!`);
+  if (!room) return null;
 
-            setIsMoveDialogOpen(false);
-            setResidentToMove(null);
-            fetchRoomDetails();
-            onUpdate();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to move resident');
-        }
-    };
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DoorOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl">Room {roomData?.room_number || room.room_number}</DialogTitle>
+                <DialogDescription>
+                  Floor {roomData?.floor || room.floor} • Capacity: {roomData?.capacity || room.capacity}
+                </DialogDescription>
+              </div>
+            </div>
+            <Badge className={getStatusColor(roomData?.status || room.status)}>
+              {(roomData?.status || room.status)?.charAt(0).toUpperCase() + (roomData?.status || room.status)?.slice(1)}
+            </Badge>
+          </div>
+        </DialogHeader>
 
-
-
-
-
-    const formatDate = (date: string) => {
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
-
-    const residents = roomData.residents || [];
-    const warnings = roomData.warnings || [];
-    const isFull = residents.length >= roomData.capacity;
-
-    return (
-        <Dialog open={true} onOpenChange={onClose}>
-            <DialogContent className="!w-[90%] sm:!w-[600px] !max-w-[650px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-                <div className="p-6 border-b">
-                    <DialogHeader className="text-left">
-                        <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-                            Room {roomData.roomNumber}
-                            <Badge variant={isFull ? "destructive" : "outline"} className="text-xs">
-                                {isFull ? 'Full' : 'Available'}
-                            </Badge>
-                        </DialogTitle>
-                        <DialogDescription className="text-sm mt-1">
-                            {residents.length} / {roomData.capacity} residents
-                        </DialogDescription>
-                    </DialogHeader>
+        <div className="flex flex-col h-full max-h-[70vh] overflow-hidden">
+          {/* Room Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <Users className="h-6 w-6 text-blue-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Occupancy</p>
+                  <p className="text-lg font-semibold">
+                    {residents.length}/{roomData?.capacity || room.capacity}
+                  </p>
                 </div>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <DoorOpen className="h-6 w-6 text-green-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Available</p>
+                  <p className="text-lg font-semibold">
+                    {(roomData?.capacity || room.capacity) - residents.length}
+                  </p>
+                </div>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <Home className="h-6 w-6 text-purple-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Floor</p>
+                  <p className="text-lg font-semibold">{roomData?.floor || room.floor}</p>
+                </div>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-6 w-6 text-orange-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Warnings</p>
+                  <p className="text-lg font-semibold">{warnings.length}</p>
+                </div>
+              </div>
+            </Card>
+          </div>
 
-                <div className="p-6 overflow-y-auto space-y-6">
+          {/* Residents Section */}
+          <div className="flex-1 overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Residents ({residents.length})
+              </h3>
+              {isAdmin && residents.length < (roomData?.capacity || room.capacity) && (
+                <Button
+                  onClick={() => setIsAddResidentOpen(true)}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Resident
+                </Button>
+              )}
+            </div>
 
-                    {/* Room Info Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-                        <Card className="p-2 bg-primary/5">
-                            <p className="text-muted-foreground text-[9px] mb-0.5">Floor</p>
-                            <p className="font-medium text-sm">{roomData.floor}</p>
-                        </Card>
-                        <Card className="p-2 bg-blue-500/5">
-                            <p className="text-muted-foreground text-[9px] mb-0.5">Capacity</p>
-                            <p className="font-medium text-sm">{roomData.capacity}</p>
-                        </Card>
-                        <Card className="p-2 bg-green-500/5">
-                            <p className="text-muted-foreground text-[9px] mb-0.5">Occupied</p>
-                            <p className="font-medium text-sm">{residents.length}</p>
-                        </Card>
-                        <Card className="p-2 bg-purple-500/5">
-                            <p className="text-muted-foreground text-[9px] mb-0.5">Last Checked</p>
-                            <p className="font-medium text-[10px]">
-                                {roomData.lastChecked ? formatDate(roomData.lastChecked) : 'N/A'}
-                            </p>
-                        </Card>
-                    </div>
-
-                    {/* Residents Section */}
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-base font-semibold flex items-center gap-2">
-                                <Users className="h-4 w-4" />
-                                Residents ({residents.length})
-                            </h3>
-                            {isAdmin && !isFull && (
+            <div className="overflow-y-auto max-h-[40vh] space-y-3">
+              <AnimatePresence>
+                {residents.length > 0 ? (
+                  residents.map((resident, index) => (
+                    <motion.div
+                      key={resident.id || index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="p-4 hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-primary">
+                                {resident.name?.charAt(0).toUpperCase() || 'R'}
+                              </span>
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{resident.name}</h4>
+                              <p className="text-sm text-muted-foreground">ID: {resident.studentId}</p>
+                              <p className="text-xs text-muted-foreground">{resident.email}</p>
+                              {resident.checkInDate && (
                                 <p className="text-xs text-muted-foreground">
-                                    Add residents from the Students section
+                                  Check-in: {new Date(resident.checkInDate).toLocaleDateString()}
                                 </p>
-                            )}
-                            {isAdmin && isFull && (
-                                <Badge variant="secondary" className="text-xs">Room Full</Badge>
-                            )}
-                            {/* Add Resident dialog removed - students should be managed from Students section */}
-                        </div>
-
-                        {residents.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                {residents.map((resident: any) => (
-                                    <Card key={resident._id} className="p-4 hover:shadow-md transition-shadow">
-                                        <div className="space-y-2 text-center">
-                                            <p className="font-semibold text-base truncate">{resident.name}</p>
-                                            <p className="text-sm text-muted-foreground truncate">{resident.studentId}</p>
-                                            <p className="text-sm text-muted-foreground truncate">{resident.email}</p>
-                                            <p className="text-xs text-muted-foreground truncate">{resident.phone}</p>
-
-                                            <div className="flex justify-center gap-1 pt-2">
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="h-7 w-7"
-                                                    onClick={async () => {
-                                                        setViewingResident(resident);
-                                                        setIsViewResidentOpen(true);
-                                                        // Fetch student details
-                                                        try {
-                                                            const allStudents = await studentsApi.getAll();
-                                                            const studentData = allStudents.find((s: any) => s.studentId === resident.studentId);
-                                                            const enrollments = await enrollmentsApi.getByStudentId(resident.studentId);
-                                                            setViewingResident({
-                                                                ...resident,
-                                                                faculty: studentData?.faculty,
-                                                                gender: studentData?.gender,
-                                                                enrollments: enrollments || []
-                                                            });
-                                                        } catch (error) {
-                                                            console.error('Failed to fetch student details:', error);
-                                                        }
-                                                    }}
-                                                    title="View Resident Details"
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                                {isAdmin && (
-                                                    <>
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            className="h-7 w-7"
-                                                            onClick={() => handleMoveResident(resident)}
-                                                            title="Move to Another Room"
-                                                        >
-                                                            <ArrowRightLeft className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            className="h-7 w-7 text-destructive hover:text-destructive"
-                                                            onClick={() => handleDeleteResident(resident)}
-                                                            title="Remove from Room"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
+                              )}
                             </div>
-                        ) : (
-                            <Card className="p-6 text-center">
-                                <Users className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                                <p className="text-sm text-muted-foreground">No residents in this room</p>
-                            </Card>
-                        )}
-                    </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className={resident.status === 'active' 
+                                ? 'border-green-500 text-green-700' 
+                                : 'border-gray-500 text-gray-700'
+                              }
+                            >
+                              {resident.status}
+                            </Badge>
+                            {isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveResident(resident)}
+                                className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))
+                ) : (
+                  <Card className="p-8 text-center">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No residents in this room</h3>
+                    <p className="text-muted-foreground mb-4">This room is currently empty</p>
+                    {isAdmin && (
+                      <Button onClick={() => setIsAddResidentOpen(true)}>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Add First Resident
+                      </Button>
+                    )}
+                  </Card>
+                )}
+              </AnimatePresence>
+            </div>
 
-                    {/* Warnings Section */}
-                    <div>
-                        <h3 className="text-base font-semibold flex items-center gap-2 mb-3">
-                            <AlertTriangle className="h-4 w-4" />
-                            Warning Letters ({warnings.length})
-                        </h3>
-
-                        {warnings.length > 0 ? (
-                            <div className="space-y-2">
-                                {warnings.map((warning: any, idx: number) => (
-                                    <Card key={idx} className="p-2 border-l-2 border-l-yellow-500">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <Badge variant="outline" className="text-[10px] px-1 py-0">
-                                                        {warning.severity || 'Warning'}
-                                                    </Badge>
-                                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                        <Calendar className="h-3 w-3" />
-                                                        {formatDate(warning.createdAt)}
-                                                    </span>
-                                                </div>
-                                                <p className="font-medium text-xs mb-0.5">{warning.title}</p>
-                                                <p className="text-xs text-muted-foreground">{warning.description}</p>
-                                                {warning.issuedBy && (
-                                                    <p className="text-[10px] text-muted-foreground mt-1">
-                                                        Issued by: {warning.issuedBy}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        ) : (
-                            <Card className="p-4 text-center">
-                                <AlertTriangle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                                <p className="text-xs text-muted-foreground">No warnings issued for this room</p>
-                            </Card>
-                        )}
-                    </div>
+            {/* Warnings Section */}
+            {warnings.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                  <AlertTriangle className="h-5 w-5 text-orange-500" />
+                  Warning Letters ({warnings.length})
+                </h3>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {warnings.map((warning: any, index: number) => (
+                    <Card key={index} className="p-3 bg-orange-50 border-orange-200 dark:bg-orange-950/20">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{warning.title}</p>
+                          <p className="text-xs text-muted-foreground">{warning.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(warning.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-
-                <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-                    <Button type="button" onClick={onClose} className="px-6">
-                        Close
-                    </Button>
-                </div>
-            </DialogContent>
-
-            {/* View Resident Dialog */}
-            {viewingResident && (
-                <Dialog open={isViewResidentOpen} onOpenChange={setIsViewResidentOpen}>
-                    <DialogContent className="!w-[90%] sm:!w-[500px] !max-w-[550px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-                        <div className="p-6 border-b">
-                            <DialogHeader className="text-left">
-                                <DialogTitle className="text-xl font-semibold">Resident Details</DialogTitle>
-                                <DialogDescription className="text-sm mt-1">
-                                    Complete information about {viewingResident.name}
-                                </DialogDescription>
-                            </DialogHeader>
-                        </div>
-
-                        <div className="p-6 overflow-y-auto space-y-4">
-                            <Card className="p-4 bg-primary/5 border-primary/20">
-                                <h4 className="text-sm font-semibold mb-3">Personal Information</h4>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Name:</span>
-                                        <span className="font-medium">{viewingResident.name}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Student ID:</span>
-                                        <span className="font-medium">{viewingResident.studentId}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Email:</span>
-                                        <span className="font-medium">{viewingResident.email}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Phone:</span>
-                                        <span className="font-medium">{viewingResident.phone}</span>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            <Card className="p-4 bg-blue-500/5 border-blue-500/20">
-                                <h4 className="text-sm font-semibold mb-3">Room Information</h4>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Room Number:</span>
-                                        <span className="font-medium">{roomData.roomNumber}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Hostel:</span>
-                                        <span className="font-medium">{roomData.hostelName}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Floor:</span>
-                                        <span className="font-medium">{roomData.floor}</span>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
-
-                        <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-                            <Button type="button" onClick={() => setIsViewResidentOpen(false)} className="px-6">
-                                Close
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+              </div>
             )}
+          </div>
+        </div>
 
-            {/* Move Resident Dialog */}
-            <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
-                <DialogContent className="!w-[90%] sm:!w-[550px] !max-w-[600px] max-h-[90vh] overflow-hidden p-0 !rounded-2xl">
-                    <div className="p-6 border-b">
-                        <DialogHeader className="text-left">
-                            <DialogTitle className="text-xl font-semibold">Move Resident</DialogTitle>
-                            <DialogDescription className="text-sm mt-1">
-                                Move {residentToMove?.name} to another room
-                            </DialogDescription>
-                        </DialogHeader>
-                    </div>
-
-                    <div className="p-6 space-y-4">
-                        <div>
-                            <Label htmlFor="hostel" className="text-sm font-medium mb-2 block">Select Hostel</Label>
-                            <select
-                                id="hostel"
-                                value={selectedHostel}
-                                onChange={(e) => handleHostelChange(e.target.value)}
-                                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                            >
-                                <option value="">Choose a hostel...</option>
-                                {hostels.map((hostel) => (
-                                    <option key={hostel._id} value={hostel._id}>
-                                        {hostel.name}
-                                    </option>
-                                ))}
-                            </select>
+        {/* Add Resident Dialog */}
+        <Dialog open={isAddResidentOpen} onOpenChange={setIsAddResidentOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Resident to Room {roomData?.room_number}</DialogTitle>
+              <DialogDescription>
+                Select a student to assign to this room
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="student">Select Student</Label>
+                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Choose a student..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableStudents.map((student) => (
+                      <SelectItem key={student.id} value={student.id}>
+                        <div className="flex flex-col">
+                          <span>{student.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ID: {student.student_id} • {student.email}
+                          </span>
                         </div>
-
-                        <div>
-                            <Label htmlFor="room" className="text-sm font-medium mb-2 block">Select Room</Label>
-                            <select
-                                id="room"
-                                value={selectedRoom}
-                                onChange={(e) => setSelectedRoom(e.target.value)}
-                                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                                disabled={!selectedHostel}
-                            >
-                                <option value="">
-                                    {selectedHostel ? 'Choose a room...' : 'Select hostel first'}
-                                </option>
-                                {availableRooms.map((room) => (
-                                    <option key={room._id} value={room._id}>
-                                        Room {room.roomNumber} (Floor {room.floor}) - {room.capacity - (room.residents?.length || 0)} spots available
-                                    </option>
-                                ))}
-                            </select>
-                            {selectedHostel && availableRooms.length === 0 && (
-                                <p className="text-xs text-amber-600 mt-2">
-                                    ⚠️ No available rooms in this hostel
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="p-6 border-t bg-muted/30 flex gap-3 justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setIsMoveDialogOpen(false)}
-                            className="px-6"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={confirmMoveResident}
-                            className="px-6"
-                            disabled={!selectedRoom}
-                        >
-                            Move Resident
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {availableStudents.length === 0 && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    No unassigned students available
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsAddResidentOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleAddResident}
+                  disabled={!selectedStudent}
+                  className="flex-1"
+                >
+                  Add Resident
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
         </Dialog>
-    );
+      </DialogContent>
+    </Dialog>
+  );
 }
